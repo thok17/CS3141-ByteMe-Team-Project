@@ -1,0 +1,15 @@
+{
+  "name": "PollyBot",
+  "version": "1.0.0",
+  "description": "repeats stuff",
+  "main": "PollyBot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Evan Martin",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^11.3.2",
+    "discord.js-commando": "^0.10.0"
+  }
+}
