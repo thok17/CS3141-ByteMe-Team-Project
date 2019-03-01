@@ -11,10 +11,10 @@ middleFrame.place(x=0,y=100)
 label=Label(aboveFrame,text="Spotify_ sync",fg="black",bg="green")
 label.grid(ipadx=2,ipady=2,sticky=N+W)
 
-bottomFrame=Frame(root,bg="black")
-bottomFrame.place(x=0,y=220)
 bottomLeftFrame=Frame(root,bg="black")
-bottomLeftFrame.place(x=300,y=220)
+bottomLeftFrame.place(x=0,y=220)
+bottomRightFrame=Frame(root,bg="black")
+bottomRightFrame.place(x=300,y=220)
 
 
 
@@ -27,14 +27,14 @@ botton_3.grid(row=1,padx=5,pady=5)
 botton_4=Button(middleFrame,text="app_4",width=10, bg="white")
 botton_4.grid(row=1,column=1,padx=5,pady=5)
 
-label_1=Label(bottomFrame,text="Currently playing",bg="black",  fg="white", anchor=E, font=("Helvetica",12,"bold", "italic"))
-label_2=Label(bottomFrame,text="Song: X, Artist: Y, Year: Y",bg="black",fg="white",width=35)
-label_3=Label(bottomFrame,text="Duration: mm:ss",bg="black",fg="white",width=35)
-label_4=Label(bottomLeftFrame,text="Do you want to change song to ",bg="black",  fg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
-label_5=Label(bottomLeftFrame,text="Song: X, Artist: Y, Year: Y",bg="black",fg="white",width=35)
-label_6=Label(bottomLeftFrame,text="Yes, I want to change to this song song",bg="black",fg="white",width=35)
-cYes=Checkbutton(bottomLeftFrame)
-cNo=Checkbutton(bottomLeftFrame)
+label_1=Label(bottomLeftFrame,text="Currently playing",bg="black",  fg="white", anchor=E, font=("Helvetica",12,"bold", "italic"))
+label_2=Label(bottomLeftFrame,text="Song: X, Artist: Y, Year: Y",bg="black",fg="white",width=35)
+label_3=Label(bottomLeftFrame,text="Duration: mm:ss",bg="black",fg="white",width=35)
+label_4=Label(bottomRightFrame,text="Do you want to change song to ",bg="black",  fg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+label_5=Label(bottomRightFrame,text="Song: X, Artist: Y, Year: Y",bg="black",fg="white",width=35)
+label_6=Label(bottomRightFrame,text="Yes, I want to change to this song song",bg="black",fg="white",width=35)
+cYes=Checkbutton(bottomRightFrame)
+cNo=Checkbutton(bottomRightFrame)
 
 
 label_2.grid(row=2,ipadx=5,ipady=2)
