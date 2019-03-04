@@ -24,12 +24,12 @@ def do_stuff():
 				TeamOne.append(name_of_player)
 				global Team_One_Index
 				Team_One_Index += 1
-	        if team_player_wants == 2:
+                        if team_player_wants == 2:
 				TeamTwo.append(name_of_player)
 				global Team_Two_Index
 				Team_Two_Index += 1
 				pass
-	        if team_player_wants != 1 and team_player_wants != 2:
+                        if team_player_wants != 1 and team_player_wants != 2:
 				game_over = True
 				pass
 	
