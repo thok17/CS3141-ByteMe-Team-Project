@@ -153,7 +153,4 @@ label_2_change.grid()
 cYes.grid(row=3,column=1,columnspan=1)
 
 
-
-
-
 root.mainloop()
