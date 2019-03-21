@@ -1,7 +1,7 @@
-from Tkinter import *
+from tkinter import *
 import sys
 import os
-import tkMessageBox
+
 import random
 
 TeamOne = []
@@ -145,11 +145,11 @@ startWindow.title('Group Rock Paper Scissors')
 startWindow.maxsize(300, 250)
 startWindow.minsize(300, 250)
 startWindow.config(background='Black')
-v = StringVar()
-e = Entry(master, textvariable=v)
+v=StringVar()
+lblEntry = Label(text="Please input the number of players: ",bg="black", fg="white")
+e = Entry(startWindow,textvariable=v)
+lblEntry.pack()
 e.pack()
-v.set("Please input the number of players: ")
-v.place(x=75, y=100)
 clickToPlay = Button(startWindow, text='Play!', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:doStuff(startWindow))
 clickToPlay.place(x=75, y=125)
 
