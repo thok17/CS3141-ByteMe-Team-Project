@@ -90,7 +90,8 @@ def theyWantTeamTwo():
 	nameTeamGetProcess(counter_One, startWindow)
 
 
-def nameTeamGetProcess(counter_One, startWindow):
+#I needed to let number_of_players to be a parameter here as well. 
+def nameTeamGetProcess(number_of_players,counter_One, startWindow):
         if counter_One > 1:
                 name_of_player = v.get()
                 if team_player_wants == 1:
@@ -103,14 +104,16 @@ def nameTeamGetProcess(counter_One, startWindow):
                         Team_Two_Index += 1
         if counter_One <= number_of_players:
                 v.set("Please enter your name Player {}:".format(counter_One))
+                #need to define raw_input
                 name_of_player = raw_input('Please enter your name: ')
                 startWindow.label_1['text'] = "Please enter your name Player {}:".format(counter_One)
         if counter_One > number_of_players:	
                 settingUpTheGame()	
 
-def doStuff(startWindow):
+#This problem got fixed by letting v be a parameter in the function as well. 
+def doStuff(startWindow,v):
 	#Close [startWindow] before advancing:
-	s = v.get()
+	s=v.get()
 	number_of_players = int(s)
 	
 	startWindow.destroy()
@@ -118,7 +121,7 @@ def doStuff(startWindow):
 
 	master = Tk()
 	master.title('Lets Play!')
-	master.maxsize(300, 250)
+	#master.maxsize(300, 250)
 	master.minsize(300, 250)
 	master.config(background='Yellow')
 	
@@ -127,16 +130,16 @@ def doStuff(startWindow):
 	v = StringVar()
 	e = Entry(master, textvariable=v)
 	e.pack()
-	v.place(x=75, y=100)
+	# I don't think you need this: v.place(x=75, y=100)
 	if number_of_players <= 0:
 		game_over = True
 	else:
 		counter_One = 1;
-		clickForTeamOne = Button(startWindow, text='Team 1', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamOne(counter_One))
+		clickForTeamOne = Button(master, text='Team 1', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamOne(counter_One))
 		clickForTeamOne.place(x=75, y=225)
-		clickForTeamTwo = Button(startWindow, text='Team 2', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamTwo(counter_One))
+		clickForTeamTwo = Button(master, text='Team 2', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamTwo(counter_One))
 		clickForTeamOne.place(x=100, y=225)
-		nameTeamGetProcess(startWindow)
+		nameTeamGetProcess(number_of_players,counter_One,master)
 	
 
 
@@ -150,7 +153,7 @@ lblEntry = Label(text="Please input the number of players: ",bg="black", fg="whi
 e = Entry(startWindow,textvariable=v)
 lblEntry.pack()
 e.pack()
-clickToPlay = Button(startWindow, text='Play!', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:doStuff(startWindow))
+clickToPlay = Button(startWindow, text='Play!', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:doStuff(startWindow,v))
 clickToPlay.place(x=75, y=125)
 
 
