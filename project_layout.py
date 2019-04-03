@@ -1,4 +1,9 @@
 from tkinter import*
+import os
+import sys
+import subprocess 
+
+
 
 def apps():
     mainFrameVote.place_forget()
@@ -7,7 +12,7 @@ def apps():
     mainFrameApp.place(x=0,y=25,relheight="1",relwidth="0.884")
     middleFrame.pack()
     rps=PhotoImage(file="rps.png")
-    botton_1=Button(middleFrame,image=rps,compound=TOP)
+    botton_1=Button(middleFrame,image=rps,compound=TOP, command=rps1)
     botton_1.image=rps
     botton_1.grid(row=0,padx=10,pady=10)
     botton_2=Button(middleFrame,text="app_2",width=10, bg="white")
@@ -16,8 +21,10 @@ def apps():
     botton_3.grid(row=1,padx=10,pady=10)
     botton_4=Button(middleFrame,text="app_4",width=10, bg="white")
     botton_4.grid(row=1,column=1,padx=10,pady=10)
-
+def rps1():
+    subprocess.Popen('python RPS_GUI.py')
     
+
 def votes():
     lblVote=Label(mainFrameVote,text="This is the vote room",font=("Helvetica",12,"bold", "italic"))
     mainFrameGroup.place_forget()
