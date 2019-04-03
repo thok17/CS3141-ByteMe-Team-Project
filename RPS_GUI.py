@@ -1,6 +1,6 @@
 from tkinter import *
-import sys
 import os
+import sys
 
 import random
 
@@ -12,80 +12,149 @@ Team_One_Index = 0
 Team_Two_Index = 0
 game_over = False
 counter_One = 1;
+Final_Team_One_Choice=1;
+Final_Team_Two_Choice=1;
+gameWindow=1;
 
 def theyAreWantRock():
         the_Choice = 1
+        global Team_One_Index
+        global Team_Two_Index
         if Team_One_Index > 0:
-                ChoicesOnes.append(the_Choice)
-                Team_One_Index += -1
+                ChoicesOne.append(the_Choice)
+                Team_One_Index -= 1
+                loopForTeamOne()
         else:
                 ChoicesTwo.append(the_Choice)
-                Team_Two_Index += -1
+                Team_Two_Index -= 1
+                loopForTeamTwo()
         
                 
 def theyAreWantPaper():
         the_Choice = 2
+        global Team_One_Index
+        global Team_Two_Index
         if Team_One_Index > 0:
-                ChoicesOnes.append(the_Choice)
-                Team_One_Index += -1
-        else:
+                ChoicesOne.append(the_Choice)
+                Team_One_Index -= 1
+                loopForTeamOne()
+        elif Team_Two_Index>0:
                 ChoicesTwo.append(the_Choice)
-                Team_Two_Index += -1
+                Team_Two_Index -= 1
+                loopForTeamTwo()
 
 def theyAreWantScissor():
         the_Choice = 3
+        global Team_One_Index
+        global Team_Two_Index
         if Team_One_Index > 0:
-                ChoicesOnes.append(the_Choice)
-                Team_One_Index += -1
+                ChoicesOne.append(the_Choice)
+                Team_One_Index -= 1
+                loopForTeamOne()
         else:
                 ChoicesTwo.append(the_Choice)
-                Team_Two_Index += -1            
+                Team_Two_Index -= 1
+                loopForTeamTwo()
                 
-def loopForTeamOne(gameWindow):
+def loopForTeamOne():
         global Team_One_Index
-        if Team_One_Index != 0:
-                name_of_player = TeamOne.pop()
-                label_name['text'] = "Please choose Rock, Paper or Scissors {}:".format(name_of_player)
-                Team_One_Index-=1           
-                loopForTeamOne(gameWindow)
-                
-def loopForTeamTwo(gameWindow):
         global Team_Two_Index
-        if Team_Two_Index != 0:
+        if (Team_One_Index!=0):
+                name_of_player = TeamOne.pop()
+                label_name['text'] = "Please do your move\n{}:".format(name_of_player)
+        else:
+                global Final_Team_One_Choice
+                Final_Team_One_Choice = ChoicesOne[random.randint(0,len(ChoicesOne)-1)]
+                if (Team_Two_Index!=0):
+                        loopForTeamTwo()
+                else:
+                        winner()
+                #Team_One_Index-=1           
+                #loopForTeamOne(gameWindow)
+        
+                
+def loopForTeamTwo():
+        global Team_Two_Index
+        if (Team_Two_Index !=0):
                 name_of_player = TeamTwo.pop()
-                label_name['text'] = "Please choose Rock, Paper or Scissors {}:".format(name_of_player)
-                Team_Two_Index-=1
-                loopForTeamTwo(gameWindow)              
+                label_name['text'] = "Please do your move\n{}:".format(name_of_player)
+        else:
+                global Final_Team_Two_Choice
+                Final_Team_Two_Choice = ChoicesTwo[random.randint(0,len(ChoicesTwo)-1)]
+                winner()
+                #Team_Two_Index-=1
+                #loopForTeamTwo(gameWindow)
 
 def settingUpTheGame(set_up_window):
         set_up_window.destroy()
         set_up_window.quit()
+        global gameWindow
         gameWindow = Tk()
         gameWindow.title("Let's play!")
+        gameWindow.maxsize(300, 250)
+        gameWindow.minsize(300, 250)
         global label_name
         label_name = Label(gameWindow, text='Welcome to the game!', font='Bizon 20 bold', bg='PeachPuff2')
         label_name.pack(side=TOP)
         #gameWindow.maxsize(300, 250)
         gameWindow.minsize(300, 250)
         gameWindow.config(background='White')
-        rock = Button(gameWindow, text='Rock', width=8, font='Bizon 12 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyAreWantRock)
+        rock = Button(gameWindow, text='Rock', width=8, font='Bizon 12 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=theyAreWantRock)
         rock.place(x=0, y=125)
-        paper = Button(gameWindow, text='Paper', width=8, font='Bizon 12 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyAreWantPaper)
+        paper = Button(gameWindow, text='Paper', width=8, font='Bizon 12 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=theyAreWantPaper)
         paper.place(x=100, y=125)
-        scissor = Button(gameWindow, text='Scissors', width=8, font='Bizon 12 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyAreWantScissor)
+        scissor = Button(gameWindow, text='Scissors', width=8, font='Bizon 12 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=theyAreWantScissor)
         scissor.place(x=200, y=125)
         TeamOne.reverse()
         TeamTwo.reverse()
         computer_One_choice = random.randint(1,3)
         computer_Two_choice = random.randint(1,3)
-        if Team_One_Index != 0:
-                loopForTeamOne(gameWindow)
-        else:
+        if Team_One_Index==0:
+                global Final_Team_One_Choice
                 Final_Team_One_Choice = computer_One_choice
-        if Team_Two_Index != 0:
-                loopForTeamTwo(gameWindow)
+        if Team_Two_Index==0:
+                global Final_Team_Two_Choice
+                Final_Team_Two_Choice = computer_One_choice
+        
+        if Team_One_Index != 0:
+                loopForTeamOne()
+       #else:Final_Team_One_Choice = computer_One_choice"""
+        elif (Team_Two_Index != 0):
+                loopForTeamTwo()
+        #else:Final_Team_Two_Choice = computer_Two_choice"""
         else:
-                Final_Team_Two_Choice = computer_Two_choice             
+                winner()
+
+def winner():
+        global gameWindow
+        gameWindow.destroy()
+        gameWindow.quit()
+        winnerWindow = Tk()
+        winnerWindow.title("The game has ended")
+        winnerWindow.maxsize(300, 250)
+        winnerWindow.minsize(300, 250)
+        winner=PhotoImage(file="winnerIcon.png")
+        winnerlbl=Label(winnerWindow,image=winner,compound=TOP)
+        winnerlbl.image=winner
+        label_name = Label(winnerWindow, text='', font='Bizon 15 bold', bg='PeachPuff2')
+        winnerlbl.pack()
+        label_name.pack(side=TOP)
+        global Final_Team_One_Choice
+        global Final_Team_Two_Choice
+        print(Final_Team_One_Choice)
+        print(Final_Team_Two_Choice)
+        if Final_Team_One_Choice == Final_Team_Two_Choice:
+                label_name['text']='Congrats! \n Both teams lose and win \nbecause it is a tie.'
+        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 2 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 1:
+                label_name['text']='Congrats Team Two!'
+        if Final_Team_One_Choice != 4 and Final_Team_Two_Choice == 4:
+                label_name['text']='Congrats Team Two! \n You shot Team One with a Gun.\nGun always wins!'
+        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 1 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 2:
+                label_name['text']='Congrats Team One!'
+        if Final_Team_One_Choice == 4 and Final_Team_Two_Choice != 4:
+               label_name['text']=='Congrats Team One! \n You shot Team Two with a Gun. \n Gun always wins!'
+        mainloop()
+        
 
 def theyWantTeamOne(set_up_window,number_of_players):
         team_player_wants = 1
@@ -104,6 +173,7 @@ def theyWantTeamTwo(set_up_window,number_of_players):
 def nameTeamGetProcess(set_up_window,number_of_players,counter_One, startWindow,team_player_wants):
         if counter_One > 1:
                 name_of_player = v.get()
+                v.set('')
                 print(name_of_player)
                 if team_player_wants == 1:
                         TeamOne.append(name_of_player)
@@ -117,7 +187,7 @@ def nameTeamGetProcess(set_up_window,number_of_players,counter_One, startWindow,
                 #.set("Please enter your name Player {}:".format(counter_One))
                 #need to define raw_input
                 #name_of_player = raw_input('Please enter your name: ')
-                label_1['text'] = "Please enter your name Player {}:".format(counter_One)
+                label_1['text'] = "Please enter your name Player {}\nthen click the team you want to join: ".format(counter_One)
         if counter_One > number_of_players:     
                 settingUpTheGame(set_up_window) 
 
@@ -130,6 +200,16 @@ def doStuff(startWindow):
         
         startWindow.destroy()
         startWindow.quit()
+        if number_of_players==0:
+                global Final_Team_One_Choice
+                global Final_Team_Two_Choice
+                Final_Team_One_Choice=random.randint(1,3)
+                Final_Team_Two_Choice=random.randint(1,3)
+                global gameWindow
+                gameWindow=Tk()
+                winner()
+                mainloop()
+                
 
         set_up_window = Tk()
         set_up_window.title('Lets Play!')
@@ -141,23 +221,17 @@ def doStuff(startWindow):
         label_set_Up=Label(set_up_window, text='Welcome to the set up!', font='Bizon 20 bold', bg='PeachPuff2')
         label_set_Up.pack(side=TOP,fill=X)
         global label_1
-        label_1=Label(set_up_window,text='Please enter your name player 1', font='Bizon 20 bold', bg='PeachPuff2')
+        label_1=Label(set_up_window,text='Please enter your name player 1,\nthen click the team you want to join: ', font='Bizon 15 bold', bg='PeachPuff2')
         label_1.pack()
         v = StringVar()
         e = Entry(set_up_window, textvariable=v)
         e.pack()
-        # I don't think you need this: v.place(x=75, y=100)
-        if number_of_players <= 0:
-                game_over = True
-        else:
-
-
-                
-                clickForTeamOne = Button(set_up_window, text='Team 1', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamOne(set_up_window,number_of_players))
-                clickForTeamOne.place(x=5, y=125)
-                clickForTeamTwo = Button(set_up_window, text='Team 2', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamTwo(set_up_window,number_of_players))
-                clickForTeamTwo.place(x=150, y=125)
+        clickForTeamOne = Button(set_up_window, text='Team 1', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamOne(set_up_window,number_of_players))
+        clickForTeamOne.place(x=5, y=125)
+        clickForTeamTwo = Button(set_up_window, text='Team 2', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamTwo(set_up_window,number_of_players))
+        clickForTeamTwo.place(x=150, y=125)
                 #nameTeamGetProcess(number_of_players,counter_One,set_up_window,0)
+        mainloop()
         
 
 
