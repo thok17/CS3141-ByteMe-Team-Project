@@ -15,6 +15,26 @@ counter_One = 1;
 Final_Team_One_Choice=1;
 Final_Team_Two_Choice=1;
 gameWindow=1;
+winnerWindow=1;
+
+def restart():
+        global winnerWindow
+        winnerWindow.destroy()
+        winnerWindow.quit()
+        startWindow = Tk()
+        startWindow.title('Group Rock Paper Scissors')
+        startWindow.maxsize(300, 250)
+        startWindow.minsize(300, 250)
+        startWindow.config(background='Black')
+        v=StringVar()
+        lblEntry = Label(text="Please input the number of players: ",bg="black", fg="white")
+        e = Entry(startWindow,textvariable=v)
+        lblEntry.pack()
+        e.pack()
+        clickToPlay = Button(startWindow, text='Play!', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:doStuff(startWindow))
+        clickToPlay.place(x=75, y=125)
+        startWindow.mainloop()
+
 
 def theyAreWantRock():
         the_Choice = 1
@@ -129,6 +149,7 @@ def winner():
         global gameWindow
         gameWindow.destroy()
         gameWindow.quit()
+        global winnerWindow
         winnerWindow = Tk()
         winnerWindow.title("The game has ended")
         winnerWindow.maxsize(300, 250)
@@ -153,6 +174,8 @@ def winner():
                 label_name['text']='Congrats Team One!'
         if Final_Team_One_Choice == 4 and Final_Team_Two_Choice != 4:
                label_name['text']=='Congrats Team One! \n You shot Team Two with a Gun. \n Gun always wins!'
+        replay = Button(winnerWindow, text='Play again', width=8, font='Bizon 10 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=restart)
+        replay.pack(side=TOP,pady=10)
         mainloop()
         
 
