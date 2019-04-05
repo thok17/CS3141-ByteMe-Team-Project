@@ -18,13 +18,14 @@ gameWindow=1;
 winnerWindow=1;
 name=0;
 singlePlayer=False;
+        
+        
+        
 
 def singlePlayerWinner(label_name):
         global name
         global Final_Team_One_Choice
         global Final_Team_Two_Choice
-        global counter_One
-        counter_One=1
         if Final_Team_One_Choice == Final_Team_Two_Choice:
                 label_name['text']='You both lose and win {} \n because it is a tie'.format(name)
         if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 2 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 1:
@@ -40,21 +41,23 @@ def multiPlayerWinner(label_name):
         if Final_Team_One_Choice == Final_Team_Two_Choice:
                 label_name['text']='Congrats! Both teams lose\nand win because it is a tie'
         if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 2 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 1:
-                label_name['text']='Congrats Team Two!'
+                label_name['text']='Congrats Team 2, you won!'
         if Final_Team_One_Choice != 4 and Final_Team_Two_Choice == 4:
-                label_name['text']='Congrats Team Two! \n You shot Team One with a Gun.\nGun always wins!'
+                label_name['text']='Congrats Team 2! \n You shot Team One with a Gun.\nGun always wins!'
         if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 1 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 2:
-                label_name['text']='Congrats Team One!'
+                label_name['text']='Congrats Team 1, you won!'
         if Final_Team_One_Choice == 4 and Final_Team_Two_Choice != 4:
-               label_name['text']=='Congrats Team One! \n You shot Team Two with a Gun. \n Gun always wins!'
+               label_name['text']=='Congrats Team 1! \n You shot Team Two with a Gun. \n Gun always wins!'
 
         
 
 def restart():
+        global counter_One
         global winnerWindow
         global Team_One_Index
         global Team_Two_Index
         global singlePlayer
+        counter_One=1
         Team_One_Index=0
         Team_Two_Index=0
         singlePlayer=False
