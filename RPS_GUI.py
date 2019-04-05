@@ -16,9 +16,48 @@ Final_Team_One_Choice=1;
 Final_Team_Two_Choice=1;
 gameWindow=1;
 winnerWindow=1;
+name=0;
+singlePlayer=False;
+
+def singlePlayerWinner(label_name):
+        global name
+        global Final_Team_One_Choice
+        global Final_Team_Two_Choice
+        global counter_One
+        counter_One=1
+        if Final_Team_One_Choice == Final_Team_Two_Choice:
+                label_name['text']='You both lose and win {} \n because it is a tie'.format(name)
+        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 2 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 1:
+                label_name['text']='Congrats {}! You won!'.format(name)
+        
+        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 1 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 2:
+                label_name['text']="I'm sorry {}, you lost!".format(name)
+        if Final_Team_One_Choice == 4 and Final_Team_Two_Choice != 4:
+               label_name['text']=='Congrats Team One! \n You shot Team Two with a Gun. \n Gun always wins!'
+def multiPlayerWinner(label_name):
+        global Final_Team_One_Choice
+        global Final_Team_Two_Choice
+        if Final_Team_One_Choice == Final_Team_Two_Choice:
+                label_name['text']='Congrats! Both teams lose\nand win because it is a tie'
+        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 2 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 1:
+                label_name['text']='Congrats Team Two!'
+        if Final_Team_One_Choice != 4 and Final_Team_Two_Choice == 4:
+                label_name['text']='Congrats Team Two! \n You shot Team One with a Gun.\nGun always wins!'
+        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 1 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 2:
+                label_name['text']='Congrats Team One!'
+        if Final_Team_One_Choice == 4 and Final_Team_Two_Choice != 4:
+               label_name['text']=='Congrats Team One! \n You shot Team Two with a Gun. \n Gun always wins!'
+
+        
 
 def restart():
         global winnerWindow
+        global Team_One_Index
+        global Team_Two_Index
+        global singlePlayer
+        Team_One_Index=0
+        Team_Two_Index=0
+        singlePlayer=False
         winnerWindow.destroy()
         winnerWindow.quit()
         startWindow = Tk()
@@ -84,6 +123,8 @@ def loopForTeamOne():
         if (Team_One_Index!=0):
                 name_of_player = TeamOne.pop()
                 label_name['text'] = "Please do your move\n{}:".format(name_of_player)
+                global name
+                name=name_of_player
         else:
                 global Final_Team_One_Choice
                 Final_Team_One_Choice = ChoicesOne[random.randint(0,len(ChoicesOne)-1)]
@@ -164,18 +205,10 @@ def winner():
         label_name.pack(side=TOP)
         global Final_Team_One_Choice
         global Final_Team_Two_Choice
-        print(Final_Team_One_Choice)
-        print(Final_Team_Two_Choice)
-        if Final_Team_One_Choice == Final_Team_Two_Choice:
-                label_name['text']='Congrats! Both teams lose\nand win because it is a tie'
-        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 2 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 1:
-                label_name['text']='Congrats Team Two!'
-        if Final_Team_One_Choice != 4 and Final_Team_Two_Choice == 4:
-                label_name['text']='Congrats Team Two! \n You shot Team One with a Gun.\nGun always wins!'
-        if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 1 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 2:
-                label_name['text']='Congrats Team One!'
-        if Final_Team_One_Choice == 4 and Final_Team_Two_Choice != 4:
-               label_name['text']=='Congrats Team One! \n You shot Team Two with a Gun. \n Gun always wins!'
+        if singlePlayer==True:
+                singlePlayerWinner(label_name)
+        else: multiPlayerWinner(label_name)
+
         replay = Button(winnerWindow, text='Play again', width=8, font='Bizon 10 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=restart)
         replay.pack(side=BOTTOM,pady=10)
         mainloop()
@@ -199,7 +232,6 @@ def nameTeamGetProcess(set_up_window,number_of_players,counter_One, startWindow,
         if counter_One > 1:
                 name_of_player = v.get()
                 v.set('')
-                print(name_of_player)
                 if team_player_wants == 1:
                         TeamOne.append(name_of_player)
                         global Team_One_Index
@@ -235,6 +267,7 @@ def doStuff(startWindow):
                 winner()
                 mainloop()
                 
+                
 
         set_up_window = Tk()
         set_up_window.title('Lets Play!')
@@ -251,12 +284,19 @@ def doStuff(startWindow):
         v = StringVar()
         e = Entry(set_up_window, textvariable=v)
         e.pack()
-        clickForTeamOne = Button(set_up_window, text='Team 1', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamOne(set_up_window,number_of_players))
-        clickForTeamOne.place(x=5, y=125)
-        clickForTeamTwo = Button(set_up_window, text='Team 2', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamTwo(set_up_window,number_of_players))
-        clickForTeamTwo.place(x=150, y=125)
+        if (number_of_players==1):
+                global singlePlayer
+                singlePlayer=True
+                clickStart = Button(set_up_window, text="Let's play", width=8, font='Bizon 15 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamOne(set_up_window,number_of_players))
+                clickStart.place(x=125, y=150)
+                mainloop()
+        else :
+                clickForTeamOne = Button(set_up_window, text='Team 1', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamOne(set_up_window,number_of_players))
+                clickForTeamOne.place(x=5, y=125)
+                clickForTeamTwo = Button(set_up_window, text='Team 2', width=8, font='Bizon 20 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=lambda:theyWantTeamTwo(set_up_window,number_of_players))
+                clickForTeamTwo.place(x=150, y=125)
                 #nameTeamGetProcess(number_of_players,counter_One,set_up_window,0)
-        mainloop()
+                mainloop()
         
 
 
