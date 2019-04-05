@@ -370,3 +370,8 @@ class TestMethods(unittest.TestCase):
             winner = 1
 
         assert winner == 1
+
+
+if __name__ == '__main__':
+    unittest.main(exit=False)
+
