@@ -1,11 +1,56 @@
-/**
- * This is an example of a basic node.js script that performs
- * the Authorization Code oAuth2 flow to authenticate against
- * the Spotify Accounts.
- *
- * For more information, read
- * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
- */
+
+var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+
+var sync = new XMLHttpRequest();
+
+var songProgress;
+
+
+function SongSync() {
+
+
+// Setup our listener to process completed requests
+sync.onload = function () {
+
+  // Process our return data
+  if (sync.status >= 200 && sync.status < 300) {
+    // What do when the request is successful
+    sync.response_type = 'json'
+    
+    var text = (sync.responseText).split(',');
+
+    console.log("Status is: " + sync.status, sync.responseText);
+
+
+    console.log("the length of the array is: " + text.length);
+
+    for(var i = 0; i < text.length; i++){
+      console.log("Number " + i + " is: " + text[i]);
+    }
+
+    tmp = (text[14]).split(" ");
+
+    songProgress = tmp[tmp.length - 1];
+
+    console.log("\n The song progress is: " + songProgress);
+  
+  } else {
+    // What do when the request fails
+    console.log(sync.status);
+  }
+
+  // Code that should run regardless of the request status
+
+};
+
+
+        // Create and send a GET request
+        // The first argument is the post type (GET, POST, PUT, DELETE, etc.)
+        // The second argument is the endpoint URL
+        sync.open('GET', 'https://api.spotify.com/v1/me/player', false);
+        sync.setRequestHeader('Authorization', 'Bearer ' + token)
+        sync.send();
+  }
 
 var SpotifyWebApi = require('spotify-web-api-node');
 
@@ -44,6 +89,8 @@ app.use(express.static(__dirname + '/public'))
    .use(cookieParser());
 
 app.get('/login', function(req, res) {
+
+	var SyncTimer = setInterval(SongSync, 10000);
 
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
@@ -181,15 +228,3 @@ app.get('/refresh_token', function(req, res) {
 console.log('Listening on 8888');
 app.listen(8888);
 
-
-
-/*
-// get Elvis' albums, passing a callback. When a callback is passed, no Promise is returned
-spotifyApi.getMe(function(err, data) {
-
-  console.log("data:")
-
-  if (err) console.error(err);
-  else console.log(data);
-});
-*/
