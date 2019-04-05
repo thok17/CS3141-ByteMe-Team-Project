@@ -26,6 +26,8 @@ def restart():
         startWindow.maxsize(300, 250)
         startWindow.minsize(300, 250)
         startWindow.config(background='Black')
+        global v
+        v.set('')
         v=StringVar()
         lblEntry = Label(text="Please input the number of players: ",bg="black", fg="white")
         e = Entry(startWindow,textvariable=v)
@@ -165,7 +167,7 @@ def winner():
         print(Final_Team_One_Choice)
         print(Final_Team_Two_Choice)
         if Final_Team_One_Choice == Final_Team_Two_Choice:
-                label_name['text']='Congrats! \n Both teams lose and win \nbecause it is a tie.'
+                label_name['text']='Congrats! Both teams lose\nand win because it is a tie'
         if Final_Team_One_Choice == 1 and Final_Team_Two_Choice == 2 or Final_Team_One_Choice == 2 and Final_Team_Two_Choice == 3 or Final_Team_One_Choice == 3 and Final_Team_Two_Choice == 1:
                 label_name['text']='Congrats Team Two!'
         if Final_Team_One_Choice != 4 and Final_Team_Two_Choice == 4:
@@ -175,7 +177,7 @@ def winner():
         if Final_Team_One_Choice == 4 and Final_Team_Two_Choice != 4:
                label_name['text']=='Congrats Team One! \n You shot Team Two with a Gun. \n Gun always wins!'
         replay = Button(winnerWindow, text='Play again', width=8, font='Bizon 10 bold', bg='Black', fg='Yellow', relief=RIDGE, bd=0, command=restart)
-        replay.pack(side=TOP,pady=10)
+        replay.pack(side=BOTTOM,pady=10)
         mainloop()
         
 
