@@ -1,8 +1,11 @@
 from tkinter import*
 import os
 import sys
-import subprocess 
+import subprocess
 
+voteCount=0
+groupCount=0
+profileCount=0
 
 
 def apps():
@@ -26,28 +29,37 @@ def rps1():
     
 
 def votes():
-    lblVote=Label(mainFrameVote,text="This is the vote room",font=("Helvetica",12,"bold", "italic"))
+    global voteCount
     mainFrameGroup.place_forget()
     mainFrameApp.place_forget()
     mainFrameProfile.place_forget()
     mainFrameVote.place(x=0,y=25,relheight="1",relwidth="0.884")
-    lblVote.pack()
+    if (voteCount==0):
+        lblVote=Label(mainFrameVote,text="This is the vote room",font=("Helvetica",12,"bold", "italic"))
+        lblVote.pack()
+    voteCount+=1
 
 
 def profiles():
-    lblProfile=Label(mainFrameProfile,text="This room will show some user \n information from Spotify profile",font=("Helvetica",12,"bold", "italic"))
+    global profileCount
     mainFrameGroup.place_forget()
     mainFrameApp.place_forget()
     mainFrameVote.place_forget()
     mainFrameProfile.place(x=0,y=25,relheight="1",relwidth="0.884")
-    lblProfile.pack()
+    if (profileCount==0):
+        lblProfile=Label(mainFrameProfile,text="This room will show some user \n information from Spotify profile",font=("Helvetica",12,"bold", "italic"))
+        lblProfile.pack()
+    profileCount+=1
 def groups():
-    lblGroups=Label(mainFrameGroup,text="This room will show who's in the group, \n and give options for leaving the group \n or add new members to the group",font=("Helvetica",12,"bold", "italic"))
+    global groupCount
     mainFrameVote.place_forget()
     mainFrameApp.place_forget()
     mainFrameProfile.place_forget()
     mainFrameGroup.place(x=0,y=25,relheight="1",relwidth="0.884")
-    lblGroups.pack()
+    if (groupCount==0):
+        lblGroups=Label(mainFrameGroup,text="This room will show who's in the group, \n and give options for leaving the group \n or add new members to the group",font=("Helvetica",12,"bold", "italic"))
+        lblGroups.pack()
+    groupCount+=1
 
 def backToMusic():
     mainFrameApp.place_forget()
