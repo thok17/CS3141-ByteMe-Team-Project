@@ -1,4 +1,24 @@
 import unittest
+from tkinter import*
+import os
+import sys
+import subprocess
+import json
+import spotipy
+import webbrowser
+import spotipy.util as util
+from json.decoder import JSONDecodeError
+import urllib.request
+import numpy as np
+import cv2
+from tkinter import PhotoImage
+from PIL import Image
+import io
+from PIL import ImageTk
+import time
+import threading
+
+
 #import SpotifyGui
 
 scope="user-read-private user-read-playback-state user-modify-playback-state"
@@ -190,7 +210,7 @@ class TestSpotifyGUI(unittest.TestCase):
        result=previousTrack()
        self.assertEqual(result,spotifyObject.previous_track(deviceID))
        
-   def test_pausePlayTrack()(self):
+   def test_pausePlayTrack(self):
        global playSong
        global pauseSong
        global btnPause

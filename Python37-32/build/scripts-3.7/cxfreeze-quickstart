@@ -1,0 +1,5 @@
+#!C:\Users\Eier\AppData\Local\Programs\Python\Python37-32\python.exe
+from cx_Freeze.setupwriter import main
+
+main()
+
