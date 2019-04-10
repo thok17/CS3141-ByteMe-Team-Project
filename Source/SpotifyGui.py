@@ -46,20 +46,22 @@ def url_to_image(url):
 #Spotipy:
 
 #Get the username from terminal.
-#username=sys.argv[1]
+#username=sys.argv[0]
 
 #userID=84fCxY5cRiWF0WnufNPsGg
+#iHtqnLzBQTiP7p-JOzi-Hg
 
 #Erase cache and promt for user premission
+#B2u0OJKPQTqIAX3wRlcrHQ
 
 scope="user-read-private user-read-playback-state user-modify-playback-state"
 try:
-    token = util.prompt_for_user_token(urlID,scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
+    token = util.prompt_for_user_token("iHtqnLzBQTiP7p-JOzi-Hg",scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
 
 
 except:
-    os.remove(f".cache-"+urlID)
-    token = util.prompt_for_user_token(urlID,scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
+ #  os.remove(f".cache-"+urlID)
+    token = util.prompt_for_user_token("iHtqnLzBQTiP7p-JOzi-Hg",scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
 
 
 #create spotify object
