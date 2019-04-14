@@ -2,6 +2,8 @@ from tkinter import*
 import os
 import sys
 import subprocess
+import mysql.connector
+from mysql.connector import Error
 
 voteCount=0
 groupCount=0
@@ -67,6 +69,32 @@ def backToMusic():
     mainFrameProfile.place_forget()
     mainFrameGroup.place_forget()
     
+def testGrabFromDatabase():
+    try:
+        mySQLconnection = mysql.connector.connect(host='localhost:3307',
+                                                  database='byteme',
+                                                  user='lsstenvi',
+                                                  password='Lukerdoo@Beylaboo058')
+        sql_select_Query = "select * from Group"
+        cursor = mySQLconnection.cursor()
+        cursor.execute(sql_select_Query)
+        record = cursor.fetchall()
+        print("Total number of rows in Group : ", cursor.rowcount)
+        print("Printing each row's column value i.e. developer record")
+        for row in records:
+            print("group_name = ", row[0])
+            print("host_name = ", row[1])
+            print("number_user = ", row[3], "\n")
+        cursor.close()
+    except Error as e:
+        print ("Error while connecting to MYSQL", e)
+    finally:
+        #closing database connection.
+        if(mySQLconnection.is_connected()):
+            connection.close()
+            print("MySQL connection is closed")
+        
+
     
 root=Tk()
 root.configure(background="green")
