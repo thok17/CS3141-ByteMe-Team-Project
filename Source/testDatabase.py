@@ -3,11 +3,17 @@ from mysql.connector import Error
 
 print("Start of a Python Database Programming Exercise\n")
 
-try:
-        connection = mysql.connector.connect(host='classdb.it.mtu.edu',
+connection = mysql.connector.connect(host='classdb.it.mtu.edu',
                                              database='lsstenvi',
                                              user='lsstenvi',
                                              password='Lukerdoo@Beylaboo058')
+cursor = connection.cursor()
+
+try:
+        connection = mysql.connector.connect(host='classdb.it.mtu.edu',
+                                             database='byteme',
+                                             user='byteme_rw',
+                                             password='password')
         if connection.is_connected():
             db_Info = connection.get_server_info()
             print("Connected to MySQL database... MySQL Server version on ", db_Info)
@@ -29,8 +35,10 @@ try:
                 print("username = ", row[0] )
                 print("group_name = ", row[1] )
                 print("isHost = ", row[2] )
-                cursor.close()
-            
+                
+
+            cursor.execute(sql_update_Query)
+            records = cursor.fetchall()
 
 except Error as e:
         print ("error while connecting to MySQL", e)
