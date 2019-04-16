@@ -47,7 +47,8 @@ deviceID=devices['devices'][0]['id']
 
 try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
-                                             database='lsstenvi',
+                                             port='3307',
+                                             database='byteme',
                                              user='lsstenvi',
                                              password='Lukerdoo@Beylaboo058')
         if connection.is_connected():
