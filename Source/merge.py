@@ -244,11 +244,14 @@ def votes():
 
 
 def profiles():
+    print("is at method profiles")
     global profileCount
     mainFrameGroup.place_forget()
     mainFrameApp.place_forget()
     mainFrameVote.place_forget()
     mainFrameProfile.place(x=0,y=25,relheight="1",relwidth="0.8962")
+
+
 
     #Get profile information. Might have this in a try/catch clause. 
     user=spotifyObject.current_user()
@@ -256,13 +259,21 @@ def profiles():
     displayName=user['display_name']
     followers=user['followers']['total']
     print("username: "+displayName+"\nnumber of followers: "+str(followers))
-    url_image = user['images'][0]['url']
-    raw_image = urllib.request.urlopen(url_image).read()
-    pImage = Image.open(io.BytesIO(raw_image))
-    pImage = pImage.resize((100, 100), Image.ANTIALIAS)
-    imageProfile =ImageTk.PhotoImage(pImage)
-    lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
-    lblProfileImage.image=imageProfile
+    try:
+        url_image = user['images'][0]['url']
+        raw_image = urllib.request.urlopen(url_image).read()
+        pImage = Image.open(io.BytesIO(raw_image))
+        pImage = pImage.resize((100, 100), Image.ANTIALIAS)
+        imageProfile =ImageTk.PhotoImage(pImage)
+        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+        lblProfileImage.image=imageProfile
+    except:
+        pImage = Image.open('Default_user_Profile.png')
+        pImage = pImage.resize((100, 100), Image.ANTIALIAS)
+        imageProfile =ImageTk.PhotoImage(pImage)
+        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+        lblProfileImage.image=imageProfile
+        print("Error, cannot grab profile image")
     playlists = spotifyObject.user_playlists(user['id'])
     for playlist in playlists['items']:
             if (playlist['owner']['id'] == user['id']):
@@ -277,6 +288,7 @@ def profiles():
         lblFollowers.pack()
     profileCount+=1
 def groups():
+    print("is at groups")
     global groupCount
     mainFrameVote.place_forget()
     mainFrameApp.place_forget()
