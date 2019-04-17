@@ -79,7 +79,8 @@ try:
             positionList=[]
             positionList.append(int(position))
             print(position)
-            spotifyObject.start_playback(deviceID,None,trackList,{"position": int(position)})
+            spotifyObject.start_playback(deviceID,None,trackList)
+            spotifyObject.seek_track(int(position), deviceID)
             
            
             
