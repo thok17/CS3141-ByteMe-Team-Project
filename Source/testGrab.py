@@ -86,10 +86,20 @@ except Error as e:
         print ("error while connecting to MySQL", e)
 finally:
 
+    def test_URI(self):
+        self.assertEqual(uri, "spotify:track:11dFghVXANMlKmJXsNCbNl")
+
+    def test_Position(self):
+        self.assertEqual(position, "20")
+
+
+
     if(connection.is_connected()):
         cursor.close()
         connection.close()
         print("MySQL connection is closed")
+
+    
 
 
 
