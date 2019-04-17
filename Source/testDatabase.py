@@ -3,14 +3,10 @@ from mysql.connector import Error
 
 print("Start of a Python Database Programming Exercise\n")
 
-connection = mysql.connector.connect(host='classdb.it.mtu.edu',
-                                             database='lsstenvi',
-                                             user='lsstenvi',
-                                             password='Lukerdoo@Beylaboo058')
-cursor = connection.cursor()
 
 try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
+                                             port='3307',
                                              database='byteme',
                                              user='byteme_rw',
                                              password='password')
@@ -37,7 +33,7 @@ try:
                 print("isHost = ", row[2] )
                 
 
-            cursor.execute(sql_update_Query)
+            cursor.execute(sql_select_Query)
             records = cursor.fetchall()
 
 except Error as e:
