@@ -16,13 +16,21 @@ import io
 from PIL import ImageTk
 import time
 import threading
+import mysql.connector
+from mysql.connector import Error
 
 voteCount=0
 groupCount=0
 profileCount=0
 volume=0
+isHost=False
+isInGroup=False
 
-urlID=input("Enter ID: ")
+
+
+
+
+urle=input("enter ID: ")
 
 def changeImage(url):
     global labelImage
@@ -44,6 +52,7 @@ def url_to_image(url):
 
 
 #Spotipy:
+    
 
 #Get the username from terminal.
 #username=sys.argv[0]
@@ -55,13 +64,14 @@ def url_to_image(url):
 #B2u0OJKPQTqIAX3wRlcrHQ
 
 scope="user-read-private user-read-playback-state user-modify-playback-state"
+
 try:
-    token = util.prompt_for_user_token("iHtqnLzBQTiP7p-JOzi-Hg",scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
+    token = util.prompt_for_user_token(urle,scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
 
 
 except:
- #  os.remove(f".cache-"+urlID)
-    token = util.prompt_for_user_token("iHtqnLzBQTiP7p-JOzi-Hg",scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
+    os.remove(f".cache-"+urlID)
+    token = util.prompt_for_user_token(urlID,scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
 
 
 #create spotify object
@@ -86,6 +96,20 @@ duration_ms=track['progress_ms']
 searchResults=spotifyObject.search(artist,1,0,"artist")
 name=searchResults['artists']['items'][0]
 followers=name['followers']['total']
+
+#Create group:
+
+
+
+#Getting user id
+user=spotifyObject.current_user()
+usrID=user['id']
+print(usrID)
+
+"""def group(groupName):
+    if (usrID
+"""
+
 
 def formatMS(number):
     seconds=number/1000
@@ -135,6 +159,17 @@ def muteUnmuteTrack():
         btnMute['image']=mute
         btnMute.image=mute
 
+"""def playPauseUpdate():
+    track=spotifyObject.current_user_playing_track()
+    isPlaying=track['is_playing']
+    if (isPlaying):
+        btnPause['image']=pauseSong
+        btnPause.image=pauseSong
+    else:
+        btnPause['image']=playSong
+        btnPause.image=playSong
+    threading.Timer(0.001, playPauseUpdate).start()"""
+
 
         
 def update():
@@ -146,6 +181,7 @@ def update():
     url=track['item']['album']['images'][0]['url']
     trackNumber=track['item']['track_number']
     album=track['item']['album']['name']
+    isPlaying=track['is_playing']
     track=track['item']['name']
     changeImage(url)
     searchResults=spotifyObject.search(artist,1,0,"artist")
@@ -183,7 +219,7 @@ def previousTrack():
 def pausePlayTrack():
     global playSong
     global pauseSong
-    global btnPause
+    global btnPause    
     if (btnPause.image==playSong):
         btnPause['image']=pauseSong
         btnPause.image=pauseSong
@@ -226,17 +262,53 @@ def votes():
     voteCount+=1
 
 
+
 def profiles():
+    print("is at method profiles")
     global profileCount
     mainFrameGroup.place_forget()
     mainFrameApp.place_forget()
     mainFrameVote.place_forget()
     mainFrameProfile.place(x=0,y=25,relheight="1",relwidth="0.8962")
+
+
+
+    #Get profile information. Might have this in a try/catch clause. 
+    user=spotifyObject.current_user()
+    print(json.dumps(user,sort_keys=True,indent=4))
+    displayName=user['display_name']
+    followers=user['followers']['total']
+    print("username: "+displayName+"\nnumber of followers: "+str(followers))
+    try:
+        url_image = user['images'][0]['url']
+        raw_image = urllib.request.urlopen(url_image).read()
+        pImage = Image.open(io.BytesIO(raw_image))
+        pImage = pImage.resize((100, 100), Image.ANTIALIAS)
+        imageProfile =ImageTk.PhotoImage(pImage)
+        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+        lblProfileImage.image=imageProfile
+    except:
+        pImage = Image.open('Default_user_Profile.png')
+        pImage = pImage.resize((100, 100), Image.ANTIALIAS)
+        imageProfile =ImageTk.PhotoImage(pImage)
+        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+        lblProfileImage.image=imageProfile
+        print("Error, cannot grab profile image")
+    playlists = spotifyObject.user_playlists(user['id'])
+    for playlist in playlists['items']:
+            if (playlist['owner']['id'] == user['id']):
+                print()
+                print(playlist['name'])
+
     if (profileCount==0):
-        lblProfile=Label(mainFrameProfile,text="This room will show some user \n information from Spotify profile",font=("Helvetica",12,"bold", "italic"))
-        lblProfile.pack()
+        lblProfileImage.pack()
+        lblName=Label(mainFrameProfile,text="Username: "+displayName,bg="white",font=("Helvetica",12,"bold", "italic"))
+        lblName.pack()
+        lblFollowers=Label(mainFrameProfile,text="Number of followers: "+str(followers),bg="white",font=("Helvetica",12,"bold", "italic"))
+        lblFollowers.pack()
     profileCount+=1
 def groups():
+    print("is at groups")
     global groupCount
     mainFrameVote.place_forget()
     mainFrameApp.place_forget()
@@ -307,8 +379,9 @@ mainFrameVote=Frame(root,bg="green")
 
 #Frame for our group-layout
 mainFrameGroup=Frame(root,bg="green")
+
 #Frame for our profile-layout
-mainFrameProfile=Frame(root,bg="green")
+mainFrameProfile=Frame(root,bg="white")
 
 
 
@@ -343,19 +416,27 @@ lblDuration=Label(bottomLeftFrame,text="Duration: "+ str(duration_ms)+"",bg="whi
 label_followers=Label(bottomLeftFrame,text="Followers: "+ str(followers)+"",bg="white",fg="black",anchor=W,width=30)
 
 #label_1_duration=Label(bottomLeftFrame,text="Duration: mm:ss",bg="white",fg="black",width=35)
+
 label_mute=Label(bottomLeftFrame,image=mute,bg="white")
+
+#Converting url to image
 raw_data = urllib.request.urlopen(url).read()
 im = Image.open(io.BytesIO(raw_data))
 im = im.resize((100, 100), Image.ANTIALIAS)
 imageAlbum =ImageTk.PhotoImage(im)
 labelImage=Label(bottomRightFrame,image=imageAlbum,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+
 label_2_song=Label(bottomRightFrame,text="Song: X",bg="black",fg="white",width=30)
 label_2_artist=Label(bottomRightFrame,text="Artist: X",bg="black",fg="white",width=5)
 label_2_change=Label(bottomRightFrame,text="Yes, I want to change to this song song",bg="black",fg="white",width=35)
 btnNext=Button(bottomRightFrame,image=nextSong,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="white", command=nextTrack)
 btnP=Button(bottomRightFrame,image=pSong,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="white", command=previousTrack)
+
+
 btnPause=Button(bottomRightFrame,image=playSong,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="white", command=pausePlayTrack)
 btnPause.image=playSong
+#Check that the correct play/pause image is displaying
+#playPauseUpdate()
 btnMute=Button(bottomRightFrame,image=mute,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="white", command=muteUnmuteTrack)
 btnMute.image=mute
 #btnPlay=Button(bottomLeftFrame,image=playSong,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="white", command=playTrack)
@@ -383,7 +464,71 @@ labelImage.grid(row=0,column=8,rowspan=3,ipady=5,padx=45)
 #label_2_artist.grid()
 #label_2_change.grid()
 #cYes.grid(row=3,column=1,columnspan=1)
-update()
+#update()
+
+
+##Accessing the database
+input("Connect to database")
+track=spotifyObject.current_user_playing_track()
+uri=track['item']['uri']
+print(uri)
+durationMS=str(track['progress_ms'])
+
+
+try:
+        connection = mysql.connector.connect(host='classdb.it.mtu.edu',
+                                             port='3307',
+                                             database='byteme',
+                                             user='byteme_rw',
+                                             password='password')
+        if connection.is_connected():
+            db_Info = connection.get_server_info()
+            print("Connected to MySQL database... MySQL Server version on ", db_Info)
+
+            cursor = connection.cursor()
+            cursor.execute("select database();")
+            record = cursor.fetchone()
+            print ("you're connected to - ", record)
+
+
+            sql_select_Query = "select host_name from Groups where group_name='byteme';"
+            cursor = connection.cursor()
+            cursor.execute(sql_select_Query)
+            records = cursor.fetchall()
+            for row in records:
+                name=row[0]
+            #
+                
+                
+        if (name=="mr.vollset"):
+            sqlQuery1="update GroupPlaying set track_uri="+"'"+uri+"'"+" where group_name='byteme';"
+            sqlQuery2="update GroupPlaying set position="+durationMS+" where group_name='byteme';"
+            cursor.execute(sqlQuery1)
+            cursor.execute(sqlQuery2)
+            record=cursor.fetchone()
+            print(record)
+            connection.commit()
+           
+            
+except Error as e:
+        print ("error while connecting to MySQL", e)
+
+
+
+
+finally:
+
+    if(connection.is_connected()):
+        cursor.close()
+        connection.close()
+        print("MySQL connection is closed")
+
+#readDbVersion()
+
+print("End of a Python Database Programming Exercise\n\n")
+
+
+
 
 
 
