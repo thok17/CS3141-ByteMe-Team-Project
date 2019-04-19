@@ -225,7 +225,7 @@ def apps():
     botton_4=Button(middleFrame,text="app_4",width=10, bg="white")
     botton_4.grid(row=1,column=1,padx=10,pady=10)
 def rps1():
-    subprocess.Popen('python RPS_GUI.py')
+    subprocess.run(['python3', 'RPS_GUI.py'])
     
 
 def votes():

@@ -61,13 +61,13 @@ try:
             print ("you're connected to - ", record)
 
 
-            sqlQuery1 = "select track_uri from GroupPlaying where group_name='byteme';"
+            sqlQuery1 = "select track_uri from GroupPlaying where group_name='Test Group';"
             cursor = connection.cursor()
             cursor.execute(sqlQuery1)
             records = cursor.fetchall()
             for row in records:
                 uri=str(row[0])
-            sqlQuery2 = "select position from GroupPlaying where group_name='byteme';"
+            sqlQuery2 = "select position from GroupPlaying where group_name='Test Group';"
             cursor = connection.cursor()
             cursor.execute(sqlQuery2)
             records = cursor.fetchall()
@@ -76,8 +76,6 @@ try:
             trackList=[]
             print(uri)
             trackList.append(uri)
-            positionList=[]
-            positionList.append(int(position))
             print(position)
             spotifyObject.start_playback(deviceID,None,trackList)
             spotifyObject.seek_track(int(position), deviceID)
@@ -88,10 +86,20 @@ except Error as e:
         print ("error while connecting to MySQL", e)
 finally:
 
+    def test_URI(self):
+        self.assertEqual(uri, "spotify:track:11dFghVXANMlKmJXsNCbNl")
+
+    def test_Position(self):
+        self.assertEqual(position, "20")
+
+
+
     if(connection.is_connected()):
         cursor.close()
         connection.close()
         print("MySQL connection is closed")
+
+    
 
 
 
