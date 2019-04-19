@@ -75,7 +75,7 @@ def nextTrack():
     trackNumber=track['item']['track_number']
     album=track['item']['album']['name']
     track=track['item']['name']
-    changeImage(url)
+
     searchResults=spotifyObject.search(artist,1,0,"artist")
     name=searchResults['artists']['items'][0]
     followers=name['followers']['total']
@@ -113,7 +113,7 @@ def update():
     trackNumber=track['item']['track_number']
     album=track['item']['album']['name']
     track=track['item']['name']
-    changeImage(url)
+
     searchResults=spotifyObject.search(artist,1,0,"artist")
     name=searchResults['artists']['items'][0]
     followers=name['followers']['total']
@@ -137,7 +137,7 @@ def previousTrack():
     trackNumber=track['item']['track_number']
     album=track['item']['album']['name']
     track=track['item']['name']
-    changeImage(url)
+
     searchResults=spotifyObject.search(artist,1,0,"artist")
     name=searchResults['artists']['items'][0]
     followers=name['followers']['total']
