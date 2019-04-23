@@ -19,6 +19,7 @@ import threading
 import mysql.connector
 from mysql.connector import Error
 from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
 
 
 voteCount=0
@@ -241,6 +242,7 @@ def apps():
     botton_3.grid(row=1,padx=10,pady=10)
     botton_4=Button(middleFrame,text="app_4",width=10, bg="white")
     botton_4.grid(row=1,column=1,padx=10,pady=10)
+
 def rps1():
     subprocess.Popen('python RPS_GUI.py')
     
@@ -255,8 +257,6 @@ def votes():
         lblVote=Label(mainFrameVote,text="This is the vote room",font=("Helvetica",12,"bold", "italic"))
         lblVote.pack()
     voteCount+=1
-
-
 
 def profiles():
     print("is at method profiles")
@@ -321,11 +321,12 @@ def findActiveGroups(usrID,txt):
         text=""
         try:
             for row in records:
-                text=(row[0]+"\n")
+                text+=(row[0]+"\n")
                 
         except:
             print("No active groups")
         finally:
+            txt.delete('1.0',END)
             txt.insert(INSERT,text)
 
 #Finds all groups where user i host. 
@@ -338,10 +339,11 @@ def findMyGroups(usrID,txt):
         text=""
         try:
             for row in records:
-                text=(row[0]+"\n")
+                text+=(row[0]+"\n")
         except:
             print("No active groups")
         finally:
+            txt.delete('1.0',END)
             txt.insert(INSERT,text)
 
 
@@ -370,7 +372,7 @@ def checkJoin(groupName):
         records = cursor.fetchall()
         try:
             for row in records:
-                if row==usrID:
+                if row[0]==usrID:
                     print("User already part of group")
                     return True #User is already part of the group
                 else:
@@ -413,7 +415,7 @@ def checkUser(usrID):
         checkUser(usrID)
 
 #Creating a new group. User is automatically the host
-def createGroup(groupName):
+def createGroup(groupName,txtMyGroup,entry):
     global connection
     connect()
     checkUser(usrID)
@@ -423,31 +425,39 @@ def createGroup(groupName):
             cursor.callproc('addGroup',args=(groupName,usrID,1))
             cursor.callproc('addPart',args=(usrID,groupName,1))
             print("group created")
+            entry.delete('0',END)
+            entry.insert('0',"")
             cursor.close()
             connection.commit()
+            findMyGroups(usrID,txtMyGroup)
             
+            
+
     else:
-         print("groupName already exist, so group can't be created with this name.")
+         messagebox.shoinfo("Attention", "GroupName already exist, so group can't be created with this name.")
   
-##Takes in txt and labels to update labels and text in the Group room.
-def joinGroup(groupName,txtActiveGroups,lbl):
+#Takes in txt and labels to update labels and text in the Group room.
+def joinGroup(groupName,txtActiveGroups,entry):
     global connection
     connect()
     checkUser(usrID)
     print("JADDA")
+    entry.delete('0',END)
+    entry.insert('0',"")
     #Check to see that there exist a group with with name 'groupName'
     if(checkGroup(groupName)):
         if(not checkJoin(groupName)):
             cursor = connection.cursor()
             cursor.callproc('updateGroupNumber',args=(groupName,))
             cursor.callproc('addIsPartOf',args=(usrID,groupName,0))
-            print("group created")
             connection.commit()
             cursor.close()
-            findActiveGroups(txtActiveGroups)
-            listenToGroup(groupName,lbl)
+            messagebox.showinfo('Attention','You have now joined the group '+groupName)
+           
+        findActiveGroups(usrID,txtActiveGroups)
+        listenToGroup(groupName)
     else:
-         print("There's no group named"+groupName)
+         messagebox.showinfo('Attention',"There's no group named "+groupName)
          return
     #Refresh thel list of active and inactive groups in the GUI 
   
@@ -472,15 +482,17 @@ def checkHost(groupName):
    
 
 #Check if group is avtive, then listens to the group       
-def listenToGroup(groupName,lblGroup):
+def listenToGroup(groupName):
+    global lblListenGroup
     if isActive(groupName):
         isHost=checkHost(groupName)
         syncGroup=groupName
-        syncToGroup(groupName) ##This function needs to check the isHost variable and push/pull accordingly
-        showGroup(lblGroup) #Displays the group in the group room
+        #syncToGroup(groupName) ##This function needs to check the isHost variable and push/pull accordingly
+        lblListenGroup['text']="You're now listening to group "+groupName
     else:
-        print("Couldn't listen to this group because it's not active")
-        
+        messagebox.showinfo('Attention',"You can't listen to the group "+groupName+",because it's inactive")
+
+
 #Check if the host is pushing to the GroupPlaying table, if not give a messege that the host is inactive and that the user can't listen to this group
 def isActive(groupName):
     connect()
@@ -547,9 +559,10 @@ def showGroup(lblListenGroup):
 
 
 def groups():
-    print("is at groups")
+    global lblListenGroup
     global groupCount
     global syncGroup
+
     mainFrameVote.place_forget()
     mainFrameApp.place_forget()
     mainFrameProfile.place_forget()
@@ -557,40 +570,42 @@ def groups():
     
     if (groupCount==0):
         if (syncGroup==""):
-            lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="green")
-            lblListenGroup.grid(row=0,columnspan=2,padx=80,pady=5)
+            lblListenGroup=Label(mainFrameGroup,text="Listening to no groups",bg="green",width=55)
+            lblListenGroup.grid(row=0,columnspan=2,pady=5)
         else:
-            lblListenGroup=Label(mainFrameGroup,text="You are listening to group "+syncGroup,bg="green")
+            lblListenGroup=Label(mainFrameGroup,text="Listening to group "+syncGroup,bg="green")
             lblListenGroup.grid(row=0,columnspan=2)
 
         lblActiveGroup=Label(mainFrameGroup,text="My active groups: ",bg="green")
-        lblActiveGroup.grid(row=1, column=0,ipadx=40,ipady=5)
+        lblActiveGroup.grid(row=1, column=0,ipadx=20,ipady=5)
 
         lblMyGroup=Label(mainFrameGroup,text="My own groups: ",bg="green")
-        lblMyGroup.grid(row=1,column=1,ipadx=40,ipady=5)
+        lblMyGroup.grid(row=1,column=1,ipadx=5,ipady=5,sticky=W)
 
         txt = ScrolledText(mainFrameGroup, width=10,height=3)
-        txt['font'] = ('consolas', '12')
+        txt['font'] = ('consolas', '9')
         txt.grid(row=2,column=0)
         findActiveGroups(usrID,txt)
 
         txt2 = ScrolledText(mainFrameGroup, width=10,height=3)
-        txt2['font'] = ('consolas', '12')
-        txt2.grid(row=2,column=1)
+        txt2['font'] = ('consolas', '9')
+        txt2.grid(row=2,column=1,sticky=W)
         findMyGroups(usrID,txt2)
         
         lbljoinGroup=Label(mainFrameGroup,text="Join group: ",bg="green")
         lbljoinGroup.grid(row=3)
         e = Entry(mainFrameGroup, width=15)
         e.grid()
-        btnJoin=Button(mainFrameGroup,text="join",command=joinGroup(e.get(),txt,lblListenGroup))
+        btnJoin=Button(mainFrameGroup,text="join",command=lambda:joinGroup(e.get(),txt,e))
         btnJoin.grid()
         lblCreateGroup=Label(mainFrameGroup,text="Create group : ",bg="green")
-        lblCreateGroup.grid(row=3,column=1)
-        e = Entry(mainFrameGroup, width=15)
-        e.grid(row=4,column=1)
-        btnJoin=Button(mainFrameGroup,text="create",command=createGroup(e.get()))
-        btnJoin.grid(row=5,column=1)
+        lblCreateGroup.grid(row=3,column=1,sticky=W,ipadx=10)
+        e2 = Entry(mainFrameGroup, width=15)
+        e2.grid(row=4,column=1,padx=5,sticky=W)
+        btnCreate=Button(mainFrameGroup,text="create",command=lambda:createGroup(e2.get(),txt2,e2))
+        btnCreate.grid(row=5,column=1,sticky=W,padx=30)
+        #lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="green")
+        #lblListenGroup.grid(row=0,columnspan=2,padx=80,pady=5)
         
         
 

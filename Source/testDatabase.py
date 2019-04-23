@@ -85,7 +85,7 @@ def checkUser(usrID):
         try:
             records[0][0]==usrID
             print("already a user!")
-            cursor.close()
+            #cursor.close()
             return
         except:
             ##sqlQuery = "insert into User values("+"'"+usrID+"'"+");"
@@ -95,7 +95,7 @@ def checkUser(usrID):
             cursor.callproc('addUser',args=(usrID,))
             print("user created")
             connection.commit()
-            cursor.close()
+            #cursor.close()
             
             
     else:
@@ -231,4 +231,6 @@ def disconnect():
 
 #readDbVersion()
 
+connect()
+checkUser('krass')
 print("End of a Python Database Programming Exercise\n\n")
