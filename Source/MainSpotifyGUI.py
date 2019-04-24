@@ -33,7 +33,7 @@ syncGroup="" #This represent the groupName of the group that usr is currently li
 endProgram=False
 
 
-
+urlID=input("Type in your Spotify username: ")
 
 
 
@@ -62,12 +62,12 @@ def url_to_image(url):
 scope="user-read-private user-read-playback-state user-modify-playback-state"
 
 try:
-    token = util.prompt_for_user_token("",scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
+    token = util.prompt_for_user_token(urlID,scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
 
 
 except:
     os.remove(f".cache-"+urlID)
-    token = util.prompt_for_user_token("",scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
+    token = util.prompt_for_user_token(urlID,scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
 
 
 #create spotify object
