@@ -964,18 +964,21 @@ def onClosing():
     global isHost
     global syncGroup
     global endProgram
-    messagebox.askokcancel("Quit", "Do you want to quit?")
-    if (isHost==True):
-        connect()
-        cursor = connection.cursor()
-        cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
-        cursor.close()
-        connection.commit()
-        connection.close()
-    endProgram=True
-    isHost=""
-    root.quit()
-    root.destroy()
+    msg=messagebox.askokcancel("Quit", "Do you want to quit?")
+    if(msg=="ok"):
+        if (isHost==True):
+            connect()
+            cursor = connection.cursor()
+            cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
+            cursor.close()
+            connection.commit()
+            connection.close()
+        endProgram=True
+        isHost=""
+        #os.remove(f".cache-"+urlID)
+        root.quit()
+        root.destroy()
+    
 
 root.protocol("WM_DELETE_WINDOW", onClosing)
 
