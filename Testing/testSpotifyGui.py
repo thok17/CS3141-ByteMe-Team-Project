@@ -76,15 +76,7 @@ def nextTrack():
     album=track['item']['album']['name']
     track=track['item']['name']
 
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-    label_1_song['text']="Song: {}".format(track)
-    label_1_artist['text']="Arist: {}".format(artist)
-    label_album['text']="Album: {}".format(album)
-    label_trackNumber['text']="Track number: {}".format(trackNumber)
-    label_followers['text']="Followers: {}".format(followers)
-    return track
+    return nextTrack
 
 def muteUnmuteTrack():
     global mute
@@ -114,15 +106,6 @@ def update():
     album=track['item']['album']['name']
     track=track['item']['name']
 
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-    label_1_song['text']="Song: {}".format(track)
-    label_1_artist['text']="Arist: {}".format(artist)
-    label_album['text']="Album: {}".format(album)
-    label_trackNumber['text']="Track number: {}".format(trackNumber)
-    label_followers['text']="Followers: {}".format(followers)
-    threading.Timer(0.01, update).start()
     return track
 
     
@@ -138,14 +121,6 @@ def previousTrack():
     album=track['item']['album']['name']
     track=track['item']['name']
 
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-    label_1_song['text']="Song: {}".format(track)
-    label_1_artist['text']="Arist: {}".format(artist)
-    label_album['text']="Album: {}".format(album)
-    label_trackNumber['text']="Track number: {}".format(trackNumber)
-    label_followers['text']="Followers: {}".format(followers)
     return previousTrack
 
 #This function will be improved so that I can check if song is currently playing or not
