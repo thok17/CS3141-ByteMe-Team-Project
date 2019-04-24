@@ -23,6 +23,12 @@ voteCount=0
 groupCount=0
 profileCount=0
 volume=0
+isHost=False
+isInGroup=False
+
+
+
+
 
 urle=input("enter ID: ")
 
@@ -71,25 +77,49 @@ except:
 #create spotify object
 spotifyObject=spotipy.Spotify(auth=token)
 
-#get current device:
-devices=spotifyObject.devices()
-print(json.dumps(devices,sort_keys=True,indent=4))
-print()
-deviceID=devices['devices'][0]['id']
+try:
+    #get current device:
+    devices=spotifyObject.devices()
+    print(json.dumps(devices,sort_keys=True,indent=4))
+    print()
+    deviceID=devices['devices'][0]['id']
 
-track=spotifyObject.current_user_playing_track()
-print(json.dumps(track,sort_keys=True,indent=4))
-print()
-playback=spotifyObject.current_playback()
-print(json.dumps(playback,sort_keys=True,indent=4))
-artist=track['item']['artists'][0]['name']
-url=track['item']['album']['images'][0]['url']
-trackNumber=track['item']['track_number']
-album=track['item']['album']['name']
-duration_ms=track['progress_ms']
-searchResults=spotifyObject.search(artist,1,0,"artist")
-name=searchResults['artists']['items'][0]
-followers=name['followers']['total']
+    track=spotifyObject.current_user_playing_track()
+    print(json.dumps(track,sort_keys=True,indent=4))
+    print()
+    playback=spotifyObject.current_playback()
+    print(json.dumps(playback,sort_keys=True,indent=4))
+    artist=track['item']['artists'][0]['name']
+    url=track['item']['album']['images'][0]['url']
+    trackNumber=track['item']['track_number']
+    album=track['item']['album']['name']
+    duration_ms=track['progress_ms']
+    searchResults=spotifyObject.search(artist,1,0,"artist")
+    name=searchResults['artists']['items'][0]
+    followers=name['followers']['total']
+
+    #Create group:
+
+
+
+    #Getting user id
+    user=spotifyObject.current_user()
+    usrID=user['id']
+    print(usrID)
+
+    """def group(groupName):
+        if (usrID
+    """
+except:
+    root=Tk()
+    #root.configure(background="green")
+    root.geometry("200x100")
+    #root.maxsize(400,260)
+    root.title('Spotify sync')
+    label_error=Label(root, text="Error: Please open Spotify in order to use this program.",bg="black",fg="white",width=30)
+    botton_error=Button(text="ok", compound=CENTER, height = 1, width = 3)
+    botton_error.grid(row=0,padx=10,pady=10)
+
 
 def formatMS(number):
     seconds=number/1000
@@ -210,8 +240,7 @@ def pausePlayTrack():
             btnPause['image']=playSong
             btnPause.image=playSong
     except:
-        print("You must be a Spotify Premium User to Do this action. Please find yourself a host daddy.")
-    
+        print("You must be a Spotify Premium User to Do this action.")
 
 def apps():
     mainFrameVote.place_forget()
@@ -454,14 +483,16 @@ labelImage.grid(row=0,column=8,rowspan=3,ipady=5,padx=45)
 input("Connect to database")
 track=spotifyObject.current_user_playing_track()
 uri=track['item']['uri']
+print(uri)
 durationMS=str(track['progress_ms'])
 
 
 try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
-                                             database='lsstenvi',
-                                             user='lsstenvi',
-                                             password='Lukerdoo@Beylaboo058')
+                                             port='3307',
+                                             database='byteme',
+                                             user='byteme_rw',
+                                             password='password')
         if connection.is_connected():
             db_Info = connection.get_server_info()
             print("Connected to MySQL database... MySQL Server version on ", db_Info)
@@ -493,6 +524,10 @@ try:
             
 except Error as e:
         print ("error while connecting to MySQL", e)
+
+
+
+
 finally:
 
     if(connection.is_connected()):
