@@ -29,7 +29,8 @@ volume=0
 isHost=False
 isInGroup=False
 connection=""
-syncGroup="" #This represent the groupName of the group that usr is currently listening to. 
+syncGroup="" #This represent the groupName of the group that usr is currently listening to.
+endProgram=False
 
 
 
@@ -152,12 +153,25 @@ def muteUnmuteTrack():
     else:
         btnPause['image']=playSong
         btnPause.image=playSong
-    threading.Timer(0.001, playPauseUpdate).start()"""
+    threading.Timer(0.05, playPauseUpdate).start()"""
 
 
         
 def update():
+    print("HEISANN")
+    global endProgram
+    if (endProgram):
+        print("HALLAPÅRE")
+        return
     track=spotifyObject.current_user_playing_track()
+    isPlaying=track['is_playing']
+    if (isPlaying):
+        btnPause['image']=pauseSong
+        btnPause.image=pauseSong
+    else:
+        btnPause['image']=playSong
+        btnPause.image=playSong
+    
     duration_ms=track['progress_ms']
     duration_ms=formatMS(duration_ms)
     lblDuration.configure(text="Duration: "+duration_ms)
@@ -176,8 +190,7 @@ def update():
     label_album['text']="Album: {}".format(album)
     label_trackNumber['text']="Track number: {}".format(trackNumber)
     label_followers['text']="Followers: {}".format(followers)
-    threading.Timer(0.01, update).start()
-
+    threading.Timer(0.001, update).start()
     
     
     
@@ -205,13 +218,13 @@ def pausePlayTrack():
     global pauseSong
     global btnPause    
     if (btnPause.image==playSong):
-        btnPause['image']=pauseSong
-        btnPause.image=pauseSong
+        #btnPause['image']=pauseSong
+        #btnPause.image=pauseSong
         start_playback=spotifyObject.start_playback(deviceID)
     else:
         pause_playback=spotifyObject.pause_playback(deviceID)
-        btnPause['image']=playSong
-        btnPause.image=playSong
+        #btnPause['image']=playSong
+        #btnPause.image=playSong
     
 
 def apps():
@@ -296,6 +309,7 @@ def profiles():
 user=spotifyObject.current_user()
 usrID=user['id']
 print(usrID)
+#usrID="Karen"
 
 
 #Finds all active Groups that user is a part of
@@ -504,7 +518,7 @@ def push():
             cursor.callproc('updateGroupPlaying',args=(syncGroup,uri,durationMS,isPlaying))
             cursor.close()
             connection.commit()
-            threading.Timer(10.0, push).start()
+            threading.Timer(5.0, push).start()
     except Error as e:
         print("her er feilen")
         messagebox.showinfo('attention',"error while connecting to MySQL")
@@ -559,11 +573,11 @@ def pull():
 
             elif (not (track_uri==uri and -10000<int(position)-int(durationMS)<10000)):
                   trackList=[]
-                  trackList.append(uri)
+                  trackList.append(track_uri)
                   spotifyObject.start_playback(deviceID,None,trackList)
                   spotifyObject.seek_track(int(position), deviceID)
 
-            threading.Timer(0.01, pull(suncGroup)).start()
+            threading.Timer(5.00, pull).start()
             
     except Error as e:
         messagebox.showinfo('Attention',"error while connecting to MySQL")
@@ -888,15 +902,6 @@ durationMS=str(track['progress_ms'])
 isPlaying=track['is_playing']
 
 
-"""connect()
-track=spotifyObject.current_user_playing_track()
-uri=track['item']['uri']
-durationMS=str(track['progress_ms'])
-isPlaying=track['is_playing']
-cursor = connection.cursor()
-cursor.callproc('addGroupPlaying',args=('byteme',uri,durationMS,isPlaying))
-cursor.close()
-connection.commit()"""
 
 try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
@@ -958,6 +963,7 @@ finally:
 def onClosing():
     global isHost
     global syncGroup
+    global endProgram
     messagebox.askokcancel("Quit", "Do you want to quit?")
     if (isHost==True):
         connect()
@@ -966,14 +972,15 @@ def onClosing():
         cursor.close()
         connection.commit()
         connection.close()
+    endProgram=True
+    isHost=""
+    root.quit()
     root.destroy()
 
 root.protocol("WM_DELETE_WINDOW", onClosing)
 
 
 print("End of a Python Database Programming Exercise\n\n")
-
-
 
 
 
