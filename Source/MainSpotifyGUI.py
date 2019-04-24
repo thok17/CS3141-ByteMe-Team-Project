@@ -219,16 +219,18 @@ def previousTrack():
 def pausePlayTrack():
     global playSong
     global pauseSong
-    global btnPause    
-    if (btnPause.image==playSong):
-        btnPause['image']=pauseSong
-        btnPause.image=pauseSong
-        start_playback=spotifyObject.start_playback(deviceID)
-    else:
-        pause_playback=spotifyObject.pause_playback(deviceID)
-        btnPause['image']=playSong
-        btnPause.image=playSong
-    
+    global btnPause
+    try:
+        if (btnPause.image==playSong):
+            btnPause['image']=pauseSong
+            btnPause.image=pauseSong
+            start_playback=spotifyObject.start_playback(deviceID)
+        else:
+            pause_playback=spotifyObject.pause_playback(deviceID)
+            btnPause['image']=playSong
+            btnPause.image=playSong
+    except:
+        print("You must be a Spotify Premium User to Do this action.")
 
 def apps():
     mainFrameVote.place_forget()
