@@ -48,15 +48,15 @@ def changeImage(url):
     
 
 def url_to_image(url):
-	# download the image, convert it to a NumPy array, and then read
-	# it into OpenCV format
-	raw_data = urllib.request.urlopen(url).read()
-	im = Image.open(io.BytesIO(raw_data))
-	im = im.resize((100, 100), Image.ANTIALIAS)
-	imageAlbum =ImageTk.PhotoImage(im)
+    # download the image, convert it to a NumPy array, and then read
+    # it into OpenCV format
+    raw_data = urllib.request.urlopen(url).read()
+    im = Image.open(io.BytesIO(raw_data))
+    im = im.resize((100, 100), Image.ANTIALIAS)
+    imageAlbum =ImageTk.PhotoImage(im)
  
-	# return the image
-	return imageAlbum
+    # return the image
+    return imageAlbum
 
 
 scope="user-read-private user-read-playback-state user-modify-playback-state"
@@ -584,6 +584,7 @@ def pull():
     if (isHost!=False):
         thredning.cancel()
         return
+    connect()
     try:
         if connection.is_connected():
             print("pulling")
@@ -621,18 +622,22 @@ def pull():
             isPlaying=track['is_playing']
             if (isPaused==0 and isPlaying==True): #If the song is playing, then pause the song
                 spotifyObject.pause_playback(deviceID)
+                print("1")
             elif (isPaused==1 and isPlaying==False):
                 trackList=[]
-                trackList.append(uri)
+                trackList.append(track_uri)
                 spotifyObject.start_playback(deviceID,None,trackList)
                 spotifyObject.seek_track(int(position), deviceID)
+                print("2")
 
             elif (not (track_uri==uri and -10000<int(position)-int(durationMS)<10000)):
                   trackList=[]
                   trackList.append(track_uri)
                   spotifyObject.start_playback(deviceID,None,trackList)
                   spotifyObject.seek_track(int(position), deviceID)
+                  print("3")
 
+            disconnect()
             threading.Timer(5.00, pull).start()
             
     except Error as e:
@@ -646,14 +651,14 @@ def listenToGroup(groupName,usrID,txtActiveGroups):
     global lblListenGroup
     global syncGroup
     global isHost
-    if (isActive(groupName) and checkHost(groupName)): #If host alrady pulls information to user
+    if (isActive(syncGroup) and checkHost(groupName)): #If host alrady pulls information to user
         connect()
         cursor = connection.cursor()
-        cursor.callproc('deleteGroupPlaying',args=(groupName,))
+        cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
         cursor.close()
         connection.commit()
         isHost=""
-        messagebox.showinfo('Attention',"You you just left group "+groupName)
+        messagebox.showinfo('Attention',"You you just left group "+syncGroup)
         
     
     if (isActive(groupName) or checkHost(groupName)): #Either the group is active, or the user is host and can make the group active
@@ -699,6 +704,7 @@ def isActive(groupName):
 
 def connect():
     global connection
+    global cursor
     try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
                                              port='3307',
@@ -953,13 +959,13 @@ isPlaying=track['is_playing']
 
 
 
-"""try:
+try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
                                              port='3307',
                                              database='byteme',
                                              user='byteme_rw',
                                              password='password')
-        if connection.is_connected():
+        """if connection.is_connected():
             db_Info = connection.get_server_info()
             print("Connected to MySQL database... MySQL Server version on ", db_Info)
 
@@ -978,18 +984,18 @@ isPlaying=track['is_playing']
                 
                 
         if (name=="mr.vollset"):
-            """sqlQuery1="update GroupPlaying set track_uri="+"'"+uri+"'"+" where group_name='byteme';"
+            sqlQuery1="update GroupPlaying set track_uri="+"'"+uri+"'"+" where group_name='byteme';"
             sqlQuery2="update GroupPlaying set position="+durationMS+" where group_name='byteme';"
 
             cursor.execute(sqlQuery1)
             cursor.execute(sqlQuery2)
-            record=cursor.fetchone()"""
+            record=cursor.fetchone()
             cursor = connection.cursor()
             cursor.callproc('updateGroupPlaying',args=('byteme',uri,durationMS,isPlaying))
             cursor.close()
             connection.commit()  
             print(record)
-            connection.commit()
+            connection.commit()"""
            
             
 except Error as e:
@@ -1001,12 +1007,11 @@ except Error as e:
 finally:
 
     if(connection.is_connected()):
-        cursor.close()
         connection.close()
         print("MySQL connection is closed")
 
 
-#readDbVersion()"""
+#readDbVersion()
 
 
 
@@ -1014,11 +1019,10 @@ def onClosing():
     global isHost
     global syncGroup
     global endProgram
+    global cursor
     msg=messagebox.askokcancel("Quit", "Do you want to quit?")
-    if(connection.is_connected():
-       connection.close()
     if(msg):
-       if (isHost==True):
+        if (isHost==True):
             connect()
             cursor = connection.cursor()
             cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
@@ -1027,9 +1031,10 @@ def onClosing():
             connection.close()
         endProgram=True
         isHost=""
-        #os.remove(f".cache-"+urlID)
+        os.remove(f".cache-"+urlID)
         root.quit()
         root.destroy()
+    
     
 
 root.protocol("WM_DELETE_WINDOW", onClosing)
