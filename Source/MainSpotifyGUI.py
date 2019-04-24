@@ -58,18 +58,6 @@ def url_to_image(url):
 	return imageAlbum
 
 
-#Spotipy:
-    
-
-#Get the username from terminal.
-#username=sys.argv[0]
-
-#userID=84fCxY5cRiWF0WnufNPsGg
-#iHtqnLzBQTiP7p-JOzi-Hg
-
-#Erase cache and promt for user premission
-#B2u0OJKPQTqIAX3wRlcrHQ
-
 scope="user-read-private user-read-playback-state user-modify-playback-state"
 
 try:
@@ -362,6 +350,20 @@ def checkGroup(groupName):
         except:
             return False
 
+def checkGroupPlaying(groupName):
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from GroupPlaying where group_name="+"'"+groupName+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            records[0][0]==groupName
+            return True
+        except:
+            return False
+    else:
+        massegebox.showinfo('Attention', 'Lost connection to server')
+
 
 #Check if user is already a part of the group:
 def checkJoin(groupName):
@@ -424,7 +426,6 @@ def createGroup(groupName,txtMyGroup,entry):
             cursor = connection.cursor()
             cursor.callproc('addGroup',args=(groupName,usrID,1))
             cursor.callproc('addPart',args=(usrID,groupName,1))
-            print("group created")
             entry.delete('0',END)
             entry.insert('0',"")
             cursor.close()
@@ -453,9 +454,8 @@ def joinGroup(groupName,txtActiveGroups,entry):
             connection.commit()
             cursor.close()
             messagebox.showinfo('Attention','You have now joined the group '+groupName)
-           
-        findActiveGroups(usrID,txtActiveGroups)
-        listenToGroup(groupName)
+            
+        listenToGroup(groupName,usrID,txtActiveGroups)
     else:
          messagebox.showinfo('Attention',"There's no group named "+groupName)
          return
@@ -480,14 +480,130 @@ def checkHost(groupName):
             print("The user is not Host")
             
    
+def syncToGroup(groupName):
+    if isHost==(''):
+        return
+    if isHost==(True):
+        pull(groupName)
+    else:
+        push(groupName)
+        
+def pull(groupName):
+    global isHost
+    if(isHost!=True):
+        return
+    try:
+        if connection.is_connected():
+            print("pulling")
+            track=spotifyObject.current_user_playing_track()
+            uri=track['item']['uri']
+            durationMS=str(track['progress_ms'])
+            isPlaying=track['is_playing']
+            cursor = connection.cursor()
+            cursor.callproc('updateGroupPlaying',args=(groupName,uri,durationMS,isPlaying))
+            cursor.close()
+            connection.commit()
+            threading.Timer(2.00, pull(groupName)).start()
+    except Error as e:
+        print("her er feilen")
+        messagebox.showinfo('attention',"error while connecting to MySQL")
+
+def push(groupName):
+    global isHost
+    if (isHost!=False):
+        return
+    try:
+        if connection.is_connected():
+            db_Info = connection.get_server_info()
+            cursor = connection.cursor()
+            cursor.execute("select database();")
+            record = cursor.fetchone()
+            sqlQuery1 = "select track_uri from GroupPlaying where group_name='"+groupName+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery1)
+            records = cursor.fetchall()
+            track_uri=""
+            try:
+                records[0][0]
+                for row in records:
+                    track_uri=str(row[0])
+            except:
+                messagebox.showinfo('attention',"Can't listen to this group anymore, because host has left!")
+                return 
+            sqlQuery2 = "select position from GroupPlaying where group_name='"+groupName+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery2)
+            records = cursor.fetchall()
+            for row in records:
+                position=row[0]
+            sqlQuery2 = "select isPaused from GroupPlaying where group_name='"+groupName+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery2)
+            records = cursor.fetchall()
+            for row in records:
+                isPaused=row[0]
+            track=spotifyObject.current_user_playing_track()
+            uri=track['item']['uri']
+            durationMS=str(track['progress_ms'])
+            isPlaying=track['is_playing']
+            if (isPaused==0 and isPlaying==True): #If the song is playing, then pause the song
+                spotifyObject.pause_playback(deviceID)
+            elif (isPaused==1 and isPlaying==False):
+                trackList=[]
+                trackList.append(uri)
+                spotifyObject.start_playback(deviceID,None,trackList)
+                spotifyObject.seek_track(int(position), deviceID)
+
+            elif (not (track_uri==uri and -10000<int(position)-int(durationMS)<10000)):
+                  trackList=[]
+                  trackList.append(uri)
+                  spotifyObject.start_playback(deviceID,None,trackList)
+                  spotifyObject.seek_track(int(position), deviceID)
+
+            threading.Timer(0.01, push(groupName)).start()
+            
+    except Error as e:
+        messagebox.showinfo('Attention',"error while connecting to MySQL")
+
+    
+
 
 #Check if group is avtive, then listens to the group       
-def listenToGroup(groupName):
+def listenToGroup(groupName,usrID,txtActiveGroups):
     global lblListenGroup
-    if isActive(groupName):
+    global syncGroup
+    global isHost
+    if (isActive(groupName) and checkHost(groupName)): #If host alrady pulls information to user
+        connect()
+        cursor = connection.cursor()
+        cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
+        cursor.close()
+        connection.commit()
+        isHost=""
+        messagebox.showinfo('Attention',"You you just left group "+groupName)
+        
+    
+    if (isActive(groupName) or checkHost(groupName)): #Either the group is active, or the user is host and can make the group active
         isHost=checkHost(groupName)
         syncGroup=groupName
-        #syncToGroup(groupName) ##This function needs to check the isHost variable and push/pull accordingly
+        if (isHost): ##Need to have this code here even though it's in the pull function, because of the finActiveGroups needs to be updated only once. 
+            try:
+                track=spotifyObject.current_user_playing_track()
+                uri=track['item']['uri']
+                durationMS=str(track['progress_ms'])
+                isPlaying=track['is_playing']
+                cursor = connection.cursor()
+                print("her1")
+                cursor.callproc('addGroupPlaying',args=(groupName,uri,durationMS,isPlaying))
+                print("her2")
+                cursor.close()
+                connection.commit()
+                connection.close()
+                findActiveGroups(usrID,txtActiveGroups)
+            except Error as e:
+                    print("er virkelig feilen her?")
+                    messagebox.showinfo('attention',"error while connecting to MySQL")
+        syncToGroup(syncGroup) ##This function needs to check the isHost variable and push/pull accordingly
         lblListenGroup['text']="You're now listening to group "+groupName
     else:
         messagebox.showinfo('Attention',"You can't listen to the group "+groupName+",because it's inactive")
@@ -766,7 +882,18 @@ track=spotifyObject.current_user_playing_track()
 uri=track['item']['uri']
 print(uri)
 durationMS=str(track['progress_ms'])
+isPlaying=track['is_playing']
 
+
+"""connect()
+track=spotifyObject.current_user_playing_track()
+uri=track['item']['uri']
+durationMS=str(track['progress_ms'])
+isPlaying=track['is_playing']
+cursor = connection.cursor()
+cursor.callproc('addGroupPlaying',args=('byteme',uri,durationMS,isPlaying))
+cursor.close()
+connection.commit()"""
 
 try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
@@ -790,15 +917,19 @@ try:
             records = cursor.fetchall()
             for row in records:
                 name=row[0]
-            #
                 
                 
         if (name=="mr.vollset"):
-            sqlQuery1="update GroupPlaying set track_uri="+"'"+uri+"'"+" where group_name='byteme';"
+            """sqlQuery1="update GroupPlaying set track_uri="+"'"+uri+"'"+" where group_name='byteme';"
             sqlQuery2="update GroupPlaying set position="+durationMS+" where group_name='byteme';"
+
             cursor.execute(sqlQuery1)
             cursor.execute(sqlQuery2)
-            record=cursor.fetchone()
+            record=cursor.fetchone()"""
+            cursor = connection.cursor()
+            cursor.callproc('updateGroupPlaying',args=('byteme',uri,durationMS,isPlaying))
+            cursor.close()
+            connection.commit()  
             print(record)
             connection.commit()
            
@@ -816,10 +947,29 @@ finally:
         connection.close()
         print("MySQL connection is closed")
 
+
 #readDbVersion()
 
-print("End of a Python Database Programming Exercise\n\n")
 
+
+def onClosing():
+    global isHost
+    global syncGroup
+    messagebox.askokcancel("Quit", "Do you want to quit?")
+    if (isHost==True):
+        connect()
+        cursor = connection.cursor()
+        cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
+        cursor.close()
+        connection.commit()
+        connection.close()
+    root.destroy()
+
+root.protocol("WM_DELETE_WINDOW", onClosing)
+
+
+print("End of a Python Database Programming Exercise\n\n")
+#push('byteme')
 
 
 
