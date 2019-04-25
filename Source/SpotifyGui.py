@@ -218,16 +218,18 @@ def apps():
     botton_1=Button(middleFrame,image=rps,compound=TOP, command=rps1)
     botton_1.image=rps
     botton_1.grid(row=0,padx=10,pady=10)
-    botton_2=Button(middleFrame,text="app_2",width=10, bg="white")
+    isImage=PhotoImage(file="rps.png")
+    botton_2=Button(middleFrame,image=isImage,compound=TOP, command=is1)
+    botton_2.image=isImage
     botton_2.grid(row=0,column=1,padx=10,pady=10)
-    botton_3=Button(middleFrame,text="app_3",width=10, bg="white")
-    botton_3.grid(row=1,padx=10,pady=10)
-    botton_4=Button(middleFrame,text="app_4",width=10, bg="white")
-    botton_4.grid(row=1,column=1,padx=10,pady=10)
-def rps1():
-    subprocess.run(['python3', 'RPS_GUI.py'])
     
-
+def rps1():
+    subprocess.Popen('python RPS_GUI.py')
+    
+def is1():
+    subprocess.Popen('python Picture_Creator.py')
+    
+	
 def votes():
     global voteCount
     mainFrameGroup.place_forget()

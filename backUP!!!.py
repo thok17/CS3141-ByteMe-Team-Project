@@ -18,6 +18,9 @@ import time
 import threading
 import mysql.connector
 from mysql.connector import Error
+from tkinter.scrolledtext import ScrolledText
+from tkinter import messagebox
+
 
 voteCount=0
 groupCount=0
@@ -25,12 +28,16 @@ profileCount=0
 volume=0
 isHost=False
 isInGroup=False
+connection=""
+syncGroup="" #This represent the groupName of the group that usr is currently listening to. 
 
 
 
 
 
-urle=input("enter ID: ")
+
+
+urlID=input("enter ID: ")
 
 def changeImage(url):
     global labelImage
@@ -66,7 +73,7 @@ def url_to_image(url):
 scope="user-read-private user-read-playback-state user-modify-playback-state"
 
 try:
-    token = util.prompt_for_user_token(urle,scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
+    token = util.prompt_for_user_token(urlID,scope=scope,client_id='756f6e8b3ffe477ea87a2a53a56bfb6f',client_secret='37b0f26267004da3bbb636334155aaab',redirect_uri='https://google.com/')
 
 
 except:
@@ -77,48 +84,27 @@ except:
 #create spotify object
 spotifyObject=spotipy.Spotify(auth=token)
 
-try:
-    #get current device:
-    devices=spotifyObject.devices()
-    print(json.dumps(devices,sort_keys=True,indent=4))
-    print()
-    deviceID=devices['devices'][0]['id']
+#get current device:
+devices=spotifyObject.devices()
+print(json.dumps(devices,sort_keys=True,indent=4))
+print()
+deviceID=devices['devices'][0]['id']
 
-    track=spotifyObject.current_user_playing_track()
-    print(json.dumps(track,sort_keys=True,indent=4))
-    print()
-    playback=spotifyObject.current_playback()
-    print(json.dumps(playback,sort_keys=True,indent=4))
-    artist=track['item']['artists'][0]['name']
-    url=track['item']['album']['images'][0]['url']
-    trackNumber=track['item']['track_number']
-    album=track['item']['album']['name']
-    duration_ms=track['progress_ms']
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-
-    #Create group:
+track=spotifyObject.current_user_playing_track()
+print(json.dumps(track,sort_keys=True,indent=4))
+print()
+playback=spotifyObject.current_playback()
+print(json.dumps(playback,sort_keys=True,indent=4))
+artist=track['item']['artists'][0]['name']
+url=track['item']['album']['images'][0]['url']
+trackNumber=track['item']['track_number']
+album=track['item']['album']['name']
+duration_ms=track['progress_ms']
+searchResults=spotifyObject.search(artist,1,0,"artist")
+name=searchResults['artists']['items'][0]
+followers=name['followers']['total']
 
 
-
-    #Getting user id
-    user=spotifyObject.current_user()
-    usrID=user['id']
-    print(usrID)
-
-    """def group(groupName):
-        if (usrID
-    """
-except:
-    root=Tk()
-    #root.configure(background="green")
-    root.geometry("200x100")
-    #root.maxsize(400,260)
-    root.title('Spotify sync')
-    label_error=Label(root, text="Error: Please open Spotify in order to use this program.",bg="black",fg="white",width=30)
-    botton_error=Button(text="ok", compound=CENTER, height = 1, width = 3)
-    botton_error.grid(row=0,padx=10,pady=10)
 
 
 def formatMS(number):
@@ -229,18 +215,16 @@ def previousTrack():
 def pausePlayTrack():
     global playSong
     global pauseSong
-    global btnPause
-    try:
-        if (btnPause.image==playSong):
-            btnPause['image']=pauseSong
-            btnPause.image=pauseSong
-            start_playback=spotifyObject.start_playback(deviceID)
-        else:
-            pause_playback=spotifyObject.pause_playback(deviceID)
-            btnPause['image']=playSong
-            btnPause.image=playSong
-    except:
-        print("You must be a Spotify Premium User to Do this action.")
+    global btnPause    
+    if (btnPause.image==playSong):
+        btnPause['image']=pauseSong
+        btnPause.image=pauseSong
+        start_playback=spotifyObject.start_playback(deviceID)
+    else:
+        pause_playback=spotifyObject.pause_playback(deviceID)
+        btnPause['image']=playSong
+        btnPause.image=playSong
+    
 
 def apps():
     mainFrameVote.place_forget()
@@ -258,6 +242,7 @@ def apps():
     botton_3.grid(row=1,padx=10,pady=10)
     botton_4=Button(middleFrame,text="app_4",width=10, bg="white")
     botton_4.grid(row=1,column=1,padx=10,pady=10)
+
 def rps1():
     subprocess.Popen('python RPS_GUI.py')
     
@@ -272,8 +257,6 @@ def votes():
         lblVote=Label(mainFrameVote,text="This is the vote room",font=("Helvetica",12,"bold", "italic"))
         lblVote.pack()
     voteCount+=1
-
-
 
 def profiles():
     print("is at method profiles")
@@ -319,16 +302,314 @@ def profiles():
         lblFollowers=Label(mainFrameProfile,text="Number of followers: "+str(followers),bg="white",font=("Helvetica",12,"bold", "italic"))
         lblFollowers.pack()
     profileCount+=1
+
+
+#Getting user id
+user=spotifyObject.current_user()
+usrID=user['id']
+print(usrID)
+
+
+#Finds all active Groups that user is a part of
+def findActiveGroups(usrID,txt):
+    connect()
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from isPartOf natural join GroupPlaying where username="+"'"+usrID+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        text=""
+        try:
+            for row in records:
+                text+=(row[0]+"\n")
+                
+        except:
+            print("No active groups")
+        finally:
+            txt.delete('1.0',END)
+            txt.insert(INSERT,text)
+
+#Finds all groups where user i host. 
+def findMyGroups(usrID,txt):
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from Groups where host_name="+"'"+usrID+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        text=""
+        try:
+            for row in records:
+                text+=(row[0]+"\n")
+        except:
+            print("No active groups")
+        finally:
+            txt.delete('1.0',END)
+            txt.insert(INSERT,text)
+
+
+
+
+#Check if group name is in Group table
+def checkGroup(groupName):
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from Groups where group_name="+"'"+groupName+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            records[0][0]==groupName
+            return True
+        except:
+            return False
+
+
+#Check if user is already a part of the group:
+def checkJoin(groupName):
+    if (connection.is_connected()):
+        sqlQuery = "select username from isPartOf where group_name="+"'"+groupName+"' and username="+"'"+usrID+"';"
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            for row in records:
+                if row[0]==usrID:
+                    print("User already part of group")
+                    return True #User is already part of the group
+                else:
+                    print("User is not part of group")
+                    return False
+        except:
+            print("User is not part of group")
+            return False
+           
+    
+    
+    
+
+#Check if user is in User table, if not it adds the user to User table
+def checkUser(usrID):
+    global connection
+    if (connection.is_connected()):
+        sqlQuery = "select username from User where username="+"'"+usrID+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            records[0][0]==usrID
+            print("already a user!")
+            cursor.close()
+            return
+        except:
+            ##sqlQuery = "insert into User values("+"'"+usrID+"'"+");"
+            ##print("user created")
+            cursor = connection.cursor()
+            args=(usrID)
+            cursor.callproc('addUser',args=(usrID,))
+            print("user created")
+            connection.commit()
+            cursor.close()
+            
+            
+    else:
+        connect()
+        checkUser(usrID)
+
+#Creating a new group. User is automatically the host
+def createGroup(groupName,txtMyGroup,entry):
+    global connection
+    connect()
+    checkUser(usrID)
+    #Check to see that there's not already a group with the same name
+    if (not checkGroup(groupName)): 
+            cursor = connection.cursor()
+            cursor.callproc('addGroup',args=(groupName,usrID,1))
+            cursor.callproc('addPart',args=(usrID,groupName,1))
+            print("group created")
+            entry.delete('0',END)
+            entry.insert('0',"")
+            cursor.close()
+            connection.commit()
+            findMyGroups(usrID,txtMyGroup)
+            
+            
+
+    else:
+         messagebox.shoinfo("Attention", "GroupName already exist, so group can't be created with this name.")
+  
+#Takes in txt and labels to update labels and text in the Group room.
+def joinGroup(groupName,txtActiveGroups,entry):
+    global connection
+    connect()
+    checkUser(usrID)
+    print("JADDA")
+    entry.delete('0',END)
+    entry.insert('0',"")
+    #Check to see that there exist a group with with name 'groupName'
+    if(checkGroup(groupName)):
+        if(not checkJoin(groupName)):
+            cursor = connection.cursor()
+            cursor.callproc('updateGroupNumber',args=(groupName,))
+            cursor.callproc('addIsPartOf',args=(usrID,groupName,0))
+            connection.commit()
+            cursor.close()
+            messagebox.showinfo('Attention','You have now joined the group '+groupName)
+           
+        findActiveGroups(usrID,txtActiveGroups)
+        listenToGroup(groupName)
+    else:
+         messagebox.showinfo('Attention',"There's no group named "+groupName)
+         return
+    #Refresh thel list of active and inactive groups in the GUI 
+  
+#Check if user is host
+def checkHost(groupName):
+    connect()
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from Groups where group_name="+"'"+groupName+"' and host_name="+"'"+usrID+"';"
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            records[0][0]==groupName #This means the user is host
+            cursor.close()
+            print("The user is Host")
+            return True
+        except:
+            cursor.close()
+            return False
+            print("The user is not Host")
+            
+   
+
+#Check if group is avtive, then listens to the group       
+def listenToGroup(groupName):
+    global lblListenGroup
+    if isActive(groupName):
+        isHost=checkHost(groupName)
+        syncGroup=groupName
+        #syncToGroup(groupName) ##This function needs to check the isHost variable and push/pull accordingly
+        lblListenGroup['text']="You're now listening to group "+groupName
+    else:
+        messagebox.showinfo('Attention',"You can't listen to the group "+groupName+",because it's inactive")
+
+
+#Check if the host is pushing to the GroupPlaying table, if not give a messege that the host is inactive and that the user can't listen to this group
+def isActive(groupName):
+    connect()
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from GroupPlaying where group_name="+"'"+groupName+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            records[0][0]==groupName #This means the group is active
+            cursor.close()
+            print("The group is active")
+            return True
+        except:
+            cursor.close()
+            return False
+            print("The group is not active")
+            
+    
+
+def connect():
+    global connection
+    try:
+        connection = mysql.connector.connect(host='classdb.it.mtu.edu',
+                                             port='3307',
+                                             database='byteme',
+                                             user='byteme_rw',
+                                             password='password')
+        if connection.is_connected():
+            db_Info = connection.get_server_info()
+            print("Connected to MySQL database... MySQL Server version on ", db_Info)
+
+            cursor = connection.cursor()
+            cursor.execute("select database();")
+            record = cursor.fetchone()
+            print ("you're connected to - ", record)
+           
+
+    except Exception as e:
+        print ("error while connecting to MySQL", e)
+
+
+
+
+
+    
+def disconnect():
+    global connection
+    if(connection.is_connected()):
+        connection.close()
+        print("MySQL connection is closed")
+
+
+def showGroup(lblListenGroup):
+    global syncGroup
+    if (syncGroup==""):
+            lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="green")
+            lblListenGroup.grid(row=0,columnspan=2,padx=80,pady=5)
+            
+    else:
+            lblListenGroup=Label(mainFrameGroup,text="You are listening to group "+syncGroup,bg="green")
+            lblListenGroup.grid(row=0,columnspan=2)
+    
+
+
 def groups():
-    print("is at groups")
+    global lblListenGroup
     global groupCount
+    global syncGroup
+
     mainFrameVote.place_forget()
     mainFrameApp.place_forget()
     mainFrameProfile.place_forget()
     mainFrameGroup.place(x=0,y=25,relheight="1",relwidth="0.8962")
+    
     if (groupCount==0):
-        lblGroups=Label(mainFrameGroup,text="This room will show who's in the group, \n and give options for leaving the group \n or add new members to the group",font=("Helvetica",12,"bold", "italic"))
-        lblGroups.pack()
+        if (syncGroup==""):
+            lblListenGroup=Label(mainFrameGroup,text="Listening to no groups",bg="green",width=55)
+            lblListenGroup.grid(row=0,columnspan=2,pady=5)
+        else:
+            lblListenGroup=Label(mainFrameGroup,text="Listening to group "+syncGroup,bg="green")
+            lblListenGroup.grid(row=0,columnspan=2)
+
+        lblActiveGroup=Label(mainFrameGroup,text="My active groups: ",bg="green")
+        lblActiveGroup.grid(row=1, column=0,ipadx=20,ipady=5)
+
+        lblMyGroup=Label(mainFrameGroup,text="My own groups: ",bg="green")
+        lblMyGroup.grid(row=1,column=1,ipadx=5,ipady=5,sticky=W)
+
+        txt = ScrolledText(mainFrameGroup, width=10,height=3)
+        txt['font'] = ('consolas', '9')
+        txt.grid(row=2,column=0)
+        findActiveGroups(usrID,txt)
+
+        txt2 = ScrolledText(mainFrameGroup, width=10,height=3)
+        txt2['font'] = ('consolas', '9')
+        txt2.grid(row=2,column=1,sticky=W)
+        findMyGroups(usrID,txt2)
+        
+        lbljoinGroup=Label(mainFrameGroup,text="Join group: ",bg="green")
+        lbljoinGroup.grid(row=3)
+        e = Entry(mainFrameGroup, width=15)
+        e.grid()
+        btnJoin=Button(mainFrameGroup,text="join",command=lambda:joinGroup(e.get(),txt,e))
+        btnJoin.grid()
+        lblCreateGroup=Label(mainFrameGroup,text="Create group : ",bg="green")
+        lblCreateGroup.grid(row=3,column=1,sticky=W,ipadx=10)
+        e2 = Entry(mainFrameGroup, width=15)
+        e2.grid(row=4,column=1,padx=5,sticky=W)
+        btnCreate=Button(mainFrameGroup,text="create",command=lambda:createGroup(e2.get(),txt2,e2))
+        btnCreate.grid(row=5,column=1,sticky=W,padx=30)
+        #lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="green")
+        #lblListenGroup.grid(row=0,columnspan=2,padx=80,pady=5)
+        
+        
+
+
     groupCount+=1
 
 def backToMusic():
