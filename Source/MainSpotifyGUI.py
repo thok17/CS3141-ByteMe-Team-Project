@@ -170,25 +170,53 @@ def update():
         btnPause['image']=playSong
         btnPause.image=playSong
     
-    duration_ms=track['progress_ms']
-    duration_ms=formatMS(duration_ms)
-    lblDuration.configure(text="Duration: "+duration_ms)
-    artist=track['item']['artists'][0]['name']
-    url=track['item']['album']['images'][0]['url']
-    trackNumber=track['item']['track_number']
-    album=track['item']['album']['name']
+    try:
+        duration_ms=track['progress_ms']
+        duration_ms=formatMS(duration_ms)
+        lblDuration.configure(text="Duration: "+duration_ms)
+    except:
+        lblDuration['text']="Duration: unknown"
+       
+        
+    try:
+        artist=track['item']['artists'][0]['name']
+        label_1_artist['text']="Arist: {}".format(artist)
+    except:
+        label_1_artist['text']="Arist: unknown"
+    try :
+        url=track['item']['album']['images'][0]['url']
+        changeImage(url)
+    except:
+        pImage = Image.open('Default_user_Profile.png')
+        pImage = pImage.resize((100, 100), Image.ANTIALIAS)
+        imageAlbum =ImageTk.PhotoImage(pImage)
+        labelImage['image']=imageAlbum
+        labelImage.image=imageAlbum
+
+    try:
+        trackNumber=track['item']['track_number']
+        album=track['item']['album']['name']
+        label_album['text']="Album: {}".format(album)
+        label_trackNumber['text']="Track number: {}".format(trackNumber)
+    except:
+        label_album['text']="Album: unknown"
+        label_trackNumber['text']="Track number: unknown"
+
     isPlaying=track['is_playing']
-    track=track['item']['name']
-    changeImage(url)
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-    label_1_song['text']="Song: {}".format(track)
-    label_1_artist['text']="Arist: {}".format(artist)
-    label_album['text']="Album: {}".format(album)
-    label_trackNumber['text']="Track number: {}".format(trackNumber)
-    label_followers['text']="Followers: {}".format(followers)
-    threading.Timer(0.001, update).start()
+   
+    try:
+        track=track['item']['name']
+        label_1_song['text']="Song: {}".format(track)
+    except:
+        label_1_song['text']="Song: unknown"
+    try:
+        searchResults=spotifyObject.search(artist,1,0,"artist")
+        name=searchResults['artists']['items'][0]
+        followers=name['followers']['total']
+        label_followers['text']="Followers: {}".format(followers)
+    except:
+        label_followers['text']="Followers: unknown"
+    threading.Timer(0.01, update).start()
     
     
     
@@ -246,13 +274,16 @@ def rps1():
     subprocess.Popen('python RPS_GUI.py')
     
 
-def findArtistAlbums(artist,txt):
+def findArtistAlbums(artist,txt,btnFrame,playFrame,entry):
     searchResults=spotifyObject.search(artist,1,0,"artist")
     artist=searchResults['artists']['items'][0]
-    #webbrowser.open(artist['images'][0]['url'])
+    url=artist['images'][0]['url']
     artistID=artist['id']
 
         #album details
+    global trackURIs
+    global trackArt
+    global z
     trackURIs=[]
     trackArt=[]
     z=0
@@ -262,7 +293,7 @@ def findArtistAlbums(artist,txt):
     albumResults=albumResults['items']
     text=""
     for item in albumResults:
-        text+="\nAlbum: "+item['name']
+        text+="\nAlbum: "+item['name']+"\n"
         #text['font']=('consolas', '9')
         albumID=item['id']
         albumArt=item['images'][0]['url']
@@ -276,49 +307,81 @@ def findArtistAlbums(artist,txt):
         #see album art
     txt.delete('1.0',END)
     txt.insert(INSERT,text)
+
+    btnShowPic=Button(btnFrame,text="picture",width=7,command=lambda:openNewWindow(url))
+    btnShowPic.grid(row=0,column=3)
+    playFrame.grid()
+    entry.delete('0',END)
+    entry.insert('0',"")
+
+
+def playNumberSong(songNumber,entry):
+    global trackURIs
+    global trackArt
+    global z
+    try:
+        trackSelectionList=[]
+        trackSelectionList.append(trackURIs[int(songNumber)])
+        spotifyObject.start_playback(deviceID,None,trackSelectionList)
+    except: messagebox.showinfo("Attention", "Was not able to play chosen song number. Please try again")
+             
+    entry.delete('0',END)
+    entry.insert('0',"")
     
-
-
-    """while True:
-            songSelection=input("Enter song number to see album art and play the song(x to exit)")
-            if songSelection=="x":
-                break
-            trackSelectionList=[]
-            trackSelectionList.append(trackURIs[int(songSelection)])
-            print(trackSelectionList[0])
-            spotifyObject.start_playback(deviceID,None,trackSelectionList)
-            image = url_to_image(trackArt[int(songSelection)])
-            cv2.imshow("Image", image)
-            cv2.waitKey(0)
-            webbrowser.open(trackArt[int(songSelection)])
-            if songSelection=="1":
-                nextTrack=spotifyObject.pause_playback(deviceID)
-                trackSelectionList.append
-                
-                audio=spotifyObject.audio_features(trackURIs)
-                print(json.dumps(audio,sort_keys=True,indent=4))
-                break"""
+def openNewWindow(url): #Open window to display picture of artist. 
+    newwin = Toplevel(root)
+    changeImage(url)
+    raw_data = urllib.request.urlopen(url).read()
+    im = Image.open(io.BytesIO(raw_data))
+    im = im.resize((300, 320), Image.ANTIALIAS)
+    imageArtist =ImageTk.PhotoImage(im)
+    lblImg=Label(newwin,image=imageArtist)
+    lblImg.image=imageArtist
+    lblImg.pack()
     
+    
+#albumDetails
+trackURIs=[]
+trackArt=[]
+z=0
 
-
-
-def votes():
+def songs():
     global voteCount
     mainFrameGroup.place_forget()
     mainFrameApp.place_forget()
     mainFrameProfile.place_forget()
     mainFrameVote.place(x=0,y=25,relheight="1",relwidth="0.8962")
     if (voteCount==0):
-        txt = ScrolledText(mainFrameVote, width=30,height=11)
-        txt['font'] = ('consolas', '9')
-        e = Entry(mainFrameVote, width=15)
-        lblArtist=Label(mainFrameVote,text="Please enter artist")
+        scrollFrame=Frame(mainFrameVote,bg="green")
+        yscrollbar = Scrollbar(scrollFrame)
+        yscrollbar.pack(side = RIGHT, fill = Y)
+        xscrollbar = Scrollbar(scrollFrame,orient='horizontal')
+        text = Text(scrollFrame, width = 48, height = 11, wrap = NONE,
+                    yscrollcommand = yscrollbar.set,xscrollcommand=xscrollbar.set)
+        text['font']=('consolas', '9')
+        text.pack()
+        xscrollbar.pack(side = BOTTOM, fill = X,anchor='w')
+        yscrollbar.config(command = text.yview)
+        xscrollbar.config(command = text.xview)
+        """txt = ScrolledText(mainFrameVote, width=48,height=13)
+        txt['font'] = ('consolas', '9')"""
+        searchFrame=Frame(mainFrameVote,bg="green")
+        e = Entry(searchFrame, width=15)
+        lblArtist=Label(searchFrame,text="Please enter an artist:",bg="green")
         lblArtist.grid(row=0,column=0)
         e.grid(row=0,column=1)
-        txt.grid(row=1,columnspan=3,ipadx=10)
-        btnAlbum=Button(mainFrameVote,text="search",command=lambda:findArtistAlbums(e.get(),txt))
+        #txt.grid(row=1,columnspan=4,padx=1)
+        btnAlbum=Button(searchFrame,text="search",width=7,command=lambda:findArtistAlbums(e.get(),text,searchFrame,playFrame,e))
         btnAlbum.grid(row=0,column=2)
-        
+        playFrame=Frame(mainFrameVote,bg="green")
+        lblSong=Label(playFrame,text="Please enter a number to play a song:",bg="green")
+        lblSong.grid(row=0,ipadx=5)
+        e2 = Entry(playFrame, width=5)
+        e2.grid(row=0,column=1,ipadx=5)
+        btnAlbum=Button(playFrame,text="play",width=7,command=lambda:playNumberSong(e2.get(),e2))
+        btnAlbum.grid(row=0,column=2,padx=5,pady=2)
+        searchFrame.grid()
+        scrollFrame.grid()
     voteCount+=1
 
 def profiles():
@@ -630,13 +693,13 @@ def pull():
                 spotifyObject.seek_track(int(position), deviceID)
                 print("2")
 
-            elif (not (track_uri==uri and -10000<int(position)-int(durationMS)<10000)):
+            elif (isPaused==1 and not (track_uri==uri and -10000<int(position)-int(durationMS)<10000)):
                   trackList=[]
                   trackList.append(track_uri)
                   spotifyObject.start_playback(deviceID,None,trackList)
                   spotifyObject.seek_track(int(position), deviceID)
                   print("3")
-
+            
             disconnect()
             threading.Timer(5.00, pull).start()
             
@@ -827,22 +890,15 @@ lblProfile=Label(aboveFrame,text="Spotify_ sync_logo",fg="black",bg="green")
 btnProfile.pack(side=RIGHT,ipadx=5)
 lblProfile.pack()
 
-menubar = Menu(btnProfile)
+"""menubar = Menu(btnProfile)
 setting = Menu(menubar, tearoff=0)
 setting.add_command(label="something")
 setting.add_command(label="something")
 setting.add_separator()
 setting.add_command(label="Log out", command=root.quit)
 menubar.add_cascade(label="Settings", menu=setting)
-
-
-
-
-
-
-
 # display the menu
-root.config(menu=menubar)
+root.config(menu=menubar)"""
 
 #label.grid(ipadx=105,ipady=2,sticky=N+W)
 #btnSettings.grid(row=0,column=2,sticky=E)
@@ -873,7 +929,7 @@ music=PhotoImage(file="musicIcon.png")
 musicSmall=PhotoImage(file="musicSmallIcon.png")
 mute=PhotoImage(file="unmute.png")
 unmute=PhotoImage(file="mute.png")
-vote=PhotoImage(file="voteIcon.png")
+search=PhotoImage(file="searchIcon.png")
 app=PhotoImage(file="appIcon.png")
 nextSong=PhotoImage(file="nextIcon.png")
 playSong=PhotoImage(file="playIcon.png")
@@ -882,10 +938,10 @@ pauseSong=PhotoImage(file="pauseIcon.png")
 group=PhotoImage(file="groupIcon.png")
 btnMusic=Button(menyFrame,text="music",image=musicSmall,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green", command=backToMusic)
 btnMusic.grid()
+btnSong=Button(menyFrame,text="song", image=search,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=songs)
+btnSong.grid()
 btnApp=Button(menyFrame,text="app", image=app,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=apps)
 btnApp.grid()
-btnVote=Button(menyFrame,text="vote", image=vote,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=votes)
-btnVote.grid()
 btnGroup=Button(menyFrame,text="group", image=group,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=groups)
 btnGroup.grid()
 
@@ -1031,7 +1087,10 @@ def onClosing():
             connection.close()
         endProgram=True
         isHost=""
-        os.remove(f".cache-"+urlID)
+        try:
+            os.remove(f".cache-"+urlID)
+        except:
+            print()
         root.quit()
         root.destroy()
     
