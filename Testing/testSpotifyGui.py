@@ -59,13 +59,6 @@ def formatMS(number):
     formatMS=str(minutes)+" : "+str(seconds)
     return formatMS
 
-def changeImage(url):
-    global labelImage
-    imageAlbum=url_to_image(url)
-    labelImage['image']=imageAlbum
-    labelImage.image=imageAlbum
-    return imageAlbum
-
 def nextTrack():
     nextTrack=spotifyObject.next_track(deviceID)
     track=spotifyObject.current_user_playing_track()
@@ -140,17 +133,6 @@ def pausePlayTrack():
     return btnPause.img
     
 
-def url_to_image(url):
-	# download the image, convert it to a NumPy array, and then read
-	# it into OpenCV format
-	raw_data = urllib.request.urlopen(url).read()
-	im = Image.open(io.BytesIO(raw_data))
-	im = im.resize((100, 100), Image.ANTIALIAS)
-	imageAlbum =ImageTk.PhotoImage(im)
- 
-	# return the image
-	return imageAlbum
-
 
 class TestSpotifyGUI(unittest.TestCase):
    def test_formatMS(self):
@@ -160,10 +142,6 @@ class TestSpotifyGUI(unittest.TestCase):
    def test_nextTrack(self):
        result=nextTrack()
        self.assertEqual(result,spotifyObject.next_track(deviceID))
-       
-   def test_changeImage(self):
-       result=changeImage(url)
-       self.assertEqual(result,labelImage)
        
    def test_muteUnmuteTrack(self):
        global mute
