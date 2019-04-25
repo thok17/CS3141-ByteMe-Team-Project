@@ -38,6 +38,7 @@ except:
 #create spotify object
 spotifyObject=spotipy.Spotify(auth=token)
 
+
 #get current device:
 devices=spotifyObject.devices()
 print(json.dumps(devices,sort_keys=True,indent=4))
@@ -87,7 +88,7 @@ def previousTrack():
     return previousTrack
 
 #Finds all active Groups that user is a part of
-def findActiveGroups(usrID,txt):
+def findActiveGroups(usrID):
     connect()
     if (connection.is_connected()):
         sqlQuery = "select group_name from isPartOf natural join GroupPlaying where username="+"'"+usrID+"'";
@@ -101,12 +102,14 @@ def findActiveGroups(usrID,txt):
                 
         except:
             print("No active groups")
-        finally:
-            print("?")
+
+        disconnect()
+        
     return text
 
 #Finds all groups where user i host. 
-def findMyGroups(usrID,txt):
+def findMyGroups(usrID):
+    connect()
     if (connection.is_connected()):
         sqlQuery = "select group_name from Groups where host_name="+"'"+usrID+"'";
         cursor = connection.cursor()
@@ -118,14 +121,14 @@ def findMyGroups(usrID,txt):
                 text=(row[0]+"\n")
         except:
             print("No active groups")
-        finally:
-            txt.insert(INSERT,text)
-
+        disconnect()
+    return  text
 
 
 
 #Check if group name is in Group table
 def checkGroup(groupName):
+    connect()
     if (connection.is_connected()):
         sqlQuery = "select group_name from Groups where group_name="+"'"+groupName+"'";
         cursor = connection.cursor()
@@ -136,11 +139,13 @@ def checkGroup(groupName):
             return True
         except:
             return False
+        disconnect()
 
 
 #Check if user is in User table, if not it adds the user to User table
 def checkUser(usrID):
     global connection
+    connect()
     if (connection.is_connected()):
         sqlQuery = "select username from User where username="+"'"+usrID+"'";
         cursor = connection.cursor()
@@ -150,25 +155,26 @@ def checkUser(usrID):
             records[0][0]==usrID
             print("already a user!")
             cursor.close()
-            return
+
+            return True
+
         except:
             ##sqlQuery = "insert into User values("+"'"+usrID+"'"+");"
             ##print("user created")
-            cursor = connection.cursor()
-            args=(usrID)
-            cursor.callproc('addUser',args=(usrID,))
-            print("user created")
-            connection.commit()
-            cursor.close()
-            
+
+            return False
+
+        disconnect()
             
     else:
         connect()
         checkUser(usrID)
+    return False
+
 
 
 #Check if user is host
-def checkHost(groupName):
+def checkHost(groupName, usrID):
     connect()
     if (connection.is_connected()):
         sqlQuery = "select group_name from Groups where group_name="+"'"+groupName+"' and host_name="+"'"+usrID+"';"
@@ -179,11 +185,14 @@ def checkHost(groupName):
             records[0][0]==groupName #This means the user is host
             cursor.close()
             print("The user is Host")
+            disconnect()
             return True
         except:
             cursor.close()
+            disconnect()
             return False
             print("The user is not Host")
+        return False
         
 
 def connect():
@@ -249,13 +258,59 @@ class TestSpotifyGUI(unittest.TestCase):
        self.assertEqual(result,"Not a real result")
     
    def test_findActiveGroups(self):
-       result=findActiveGroups("Test User", "test")
+       result=findActiveGroups("Test User")
        self.assertEqual(result,"Test Group\n")
 
    @unittest.expectedFailure    
    def test_failFindActiveGroups(self):
-       result=findActiveGroups("not a real user", "fail")
+       result=findActiveGroups("not a real user")
        self.assertEqual(result,"not a real result")
+
+    
+   def test_findMyGroups(self):
+       result=findMyGroups("Test User")
+       self.assertEqual(result,"Test Group\n")
+
+
+   @unittest.expectedFailure       
+   def test_failFindMyGroups(self):
+       result=findMyGroups("Not a real user")
+       self.assertEqual(result,"not a real result")
+
+    
+   def test_checkGroup(self):
+       result=checkGroup("Test Group")
+       self.assertEqual(result, True)
+
+
+   @unittest.expectedFailure  
+   def test_failCheckGroup(self):
+       result=checkGroup("Not a real Group")
+       self.assertEqual(result, True)
+
+
+   def test_checkUser(self):
+       result=checkUser("Test User")
+       self.assertEqual(result, True)
+
+
+   @unittest.expectedFailure 
+   def test_failCheckUser(self):
+       result=checkUser("Not a real User")
+       self.assertEqual(result, True)
+
+
+   def test_checkHost(self):
+       result=checkHost("Test Group", "Test User")
+       self.assertEqual(result, True)
+
+
+   @unittest.expectedFailure 
+   def test_failCheckHost(self):
+       result=checkHost("Fake Group", "Test User")
+       self.assertEqual(result, True)       
+
+
        
 if (__name__=='__main__'):
     unittest.main()
