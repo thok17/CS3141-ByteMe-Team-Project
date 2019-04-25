@@ -588,6 +588,7 @@ def joinGroup(groupName,txtActiveGroups,entry):
             messagebox.showinfo('Attention','You have now joined the group '+groupName)
             
         listenToGroup(groupName,usrID,txtActiveGroups)
+        
     else:
          messagebox.showinfo('Attention',"There's no group named "+groupName)
          return
@@ -737,10 +738,9 @@ def listenToGroup(groupName,usrID,txtActiveGroups):
                 cursor.callproc('addGroupPlaying',args=(groupName,uri,durationMS,isPlaying))
                 cursor.close()
                 connection.commit()
-                connection.close()
-                findActiveGroups(usrID,txtActiveGroups)
             except Error as e:
                     messagebox.showinfo('attention',"error while connecting to MySQL")
+        findActiveGroups(usrID,txtActiveGroups)
         syncToGroup() ##This function needs to check the isHost variable and push/pull accordingly
         lblListenGroup['text']="You're now listening to group "+groupName
     else:
