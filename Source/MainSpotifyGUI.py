@@ -841,17 +841,17 @@ def groups():
     
     if (groupCount==0):
         if (syncGroup==""):
-            lblListenGroup=Label(mainFrameGroup,text="Listening to no groups",bg="black", fg="white", font=("Helvetica",10,"bold"),width=55)
-            lblListenGroup.grid(row=0,columnspan=2,pady=5)
+            lblListenGroup=Label(mainFrameGroup,text="Listening to no groups",bg="black", fg="white", font=("Helvetica",10,"bold"),width=45)
+            lblListenGroup.grid(row=0,column=0,columnspan=2,sticky=W)
         else:
             lblListenGroup=Label(mainFrameGroup,text="Listening to group "+syncGroup,bg="black", fg="white", font=("Helvetica",10,"bold"))
             lblListenGroup.grid(row=0,columnspan=2)
 
         lblActiveGroup=Label(mainFrameGroup,text="My active groups: ",bg="black", fg="white", font=("Helvetica",10,"bold"))
-        lblActiveGroup.grid(row=1, column=0,ipadx=20,ipady=5)
+        lblActiveGroup.grid(row=1, column=0,ipadx=5,ipady=5)
 
         lblMyGroup=Label(mainFrameGroup,text="My own groups: ",bg="black", fg="white", font=("Helvetica",10,"bold"))
-        lblMyGroup.grid(row=1,column=1,ipadx=5,ipady=5,sticky=W)
+        lblMyGroup.grid(row=1,column=1,ipady=5,sticky=W)
 
         txt = ScrolledText(mainFrameGroup, width=10,height=3)
         txt['font'] = ('consolas', '9')
@@ -872,9 +872,9 @@ def groups():
         lblCreateGroup=Label(mainFrameGroup,text="Create group : ",bg="black", fg="white", font=("Helvetica",8,"bold"))
         lblCreateGroup.grid(row=3,column=1,sticky=W,ipadx=10)
         e2 = Entry(mainFrameGroup, width=15)
-        e2.grid(row=4,column=1,padx=5,sticky=W)
+        e2.grid(row=4,column=1,sticky=W)
         btnCreate=Button(mainFrameGroup,text="create",command=lambda:createGroup(e2.get(),txt2,e2))
-        btnCreate.grid(row=5,column=1,sticky=W,padx=30)
+        btnCreate.grid(row=5,column=1,sticky=W,padx=25)
         #lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="green")
         #lblListenGroup.grid(row=0,columnspan=2,padx=80,pady=5)
         
