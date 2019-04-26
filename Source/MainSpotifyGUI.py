@@ -446,7 +446,7 @@ def profiles():
 
 #Getting user id
 user=spotifyObject.current_user()
-usrID="Lena"
+usrID=user['id']
 
 
 
