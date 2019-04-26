@@ -29,15 +29,16 @@ volume=0
 isHost=False
 isInGroup=False
 connection=""
-syncGroup="" #This represent the groupName of the group that usr is currently listening to. 
+syncGroup="" #This represent the groupName of the group that usr is currently listening to.
+endProgram=False
+
+
+urlID=input("Type in your Spotify username: ")
 
 
 
 
 
-
-
-urlID=input("enter ID: ")
 
 def changeImage(url):
     global labelImage
@@ -47,28 +48,16 @@ def changeImage(url):
     
 
 def url_to_image(url):
-	# download the image, convert it to a NumPy array, and then read
-	# it into OpenCV format
-	raw_data = urllib.request.urlopen(url).read()
-	im = Image.open(io.BytesIO(raw_data))
-	im = im.resize((100, 100), Image.ANTIALIAS)
-	imageAlbum =ImageTk.PhotoImage(im)
+    # download the image, convert it to a NumPy array, and then read
+    # it into OpenCV format
+    raw_data = urllib.request.urlopen(url).read()
+    im = Image.open(io.BytesIO(raw_data))
+    im = im.resize((100, 100), Image.ANTIALIAS)
+    imageAlbum =ImageTk.PhotoImage(im)
  
-	# return the image
-	return imageAlbum
+    # return the image
+    return imageAlbum
 
-
-#Spotipy:
-    
-
-#Get the username from terminal.
-#username=sys.argv[0]
-
-#userID=84fCxY5cRiWF0WnufNPsGg
-#iHtqnLzBQTiP7p-JOzi-Hg
-
-#Erase cache and promt for user premission
-#B2u0OJKPQTqIAX3wRlcrHQ
 
 scope="user-read-private user-read-playback-state user-modify-playback-state"
 
@@ -164,32 +153,70 @@ def muteUnmuteTrack():
     else:
         btnPause['image']=playSong
         btnPause.image=playSong
-    threading.Timer(0.001, playPauseUpdate).start()"""
+    threading.Timer(0.05, playPauseUpdate).start()"""
 
 
         
 def update():
+    global endProgram
+    if (endProgram):
+        return
     track=spotifyObject.current_user_playing_track()
-    duration_ms=track['progress_ms']
-    duration_ms=formatMS(duration_ms)
-    lblDuration.configure(text="Duration: "+duration_ms)
-    artist=track['item']['artists'][0]['name']
-    url=track['item']['album']['images'][0]['url']
-    trackNumber=track['item']['track_number']
-    album=track['item']['album']['name']
     isPlaying=track['is_playing']
-    track=track['item']['name']
-    changeImage(url)
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-    label_1_song['text']="Song: {}".format(track)
-    label_1_artist['text']="Arist: {}".format(artist)
-    label_album['text']="Album: {}".format(album)
-    label_trackNumber['text']="Track number: {}".format(trackNumber)
-    label_followers['text']="Followers: {}".format(followers)
-    threading.Timer(0.01, update).start()
+    if (isPlaying):
+        btnPause['image']=pauseSong
+        btnPause.image=pauseSong
+    else:
+        btnPause['image']=playSong
+        btnPause.image=playSong
+    
+    try:
+        duration_ms=track['progress_ms']
+        duration_ms=formatMS(duration_ms)
+        lblDuration.configure(text="Duration: "+duration_ms)
+    except:
+        lblDuration['text']="Duration: unknown"
+       
+        
+    try:
+        artist=track['item']['artists'][0]['name']
+        label_1_artist['text']="Arist: {}".format(artist)
+    except:
+        label_1_artist['text']="Arist: unknown"
+    try :
+        url=track['item']['album']['images'][0]['url']
+        changeImage(url)
+    except:
+        pImage = Image.open('Default_user_Profile.png')
+        pImage = pImage.resize((100, 100), Image.ANTIALIAS)
+        imageAlbum =ImageTk.PhotoImage(pImage)
+        labelImage['image']=imageAlbum
+        labelImage.image=imageAlbum
 
+    try:
+        trackNumber=track['item']['track_number']
+        album=track['item']['album']['name']
+        label_album['text']="Album: {}".format(album)
+        label_trackNumber['text']="Track number: {}".format(trackNumber)
+    except:
+        label_album['text']="Album: unknown"
+        label_trackNumber['text']="Track number: unknown"
+
+    isPlaying=track['is_playing']
+   
+    try:
+        track=track['item']['name']
+        label_1_song['text']="Song: {}".format(track)
+    except:
+        label_1_song['text']="Song: unknown"
+    try:
+        searchResults=spotifyObject.search(artist,1,0,"artist")
+        name=searchResults['artists']['items'][0]
+        followers=name['followers']['total']
+        label_followers['text']="Followers: {}".format(followers)
+    except:
+        label_followers['text']="Followers: unknown"
+    threading.Timer(0.01, update).start()
     
     
     
@@ -217,13 +244,13 @@ def pausePlayTrack():
     global pauseSong
     global btnPause    
     if (btnPause.image==playSong):
-        btnPause['image']=pauseSong
-        btnPause.image=pauseSong
+        #btnPause['image']=pauseSong
+        #btnPause.image=pauseSong
         start_playback=spotifyObject.start_playback(deviceID)
     else:
         pause_playback=spotifyObject.pause_playback(deviceID)
-        btnPause['image']=playSong
-        btnPause.image=playSong
+        #btnPause['image']=playSong
+        #btnPause.image=playSong
     
 
 def apps():
@@ -247,15 +274,114 @@ def rps1():
     subprocess.Popen('python RPS_GUI.py')
     
 
-def votes():
+def findArtistAlbums(artist,txt,btnFrame,playFrame,entry):
+    searchResults=spotifyObject.search(artist,1,0,"artist")
+    artist=searchResults['artists']['items'][0]
+    url=artist['images'][0]['url']
+    artistID=artist['id']
+
+        #album details
+    global trackURIs
+    global trackArt
+    global z
+    trackURIs=[]
+    trackArt=[]
+    z=0
+
+        #extract album data
+    albumResults=spotifyObject.artist_albums(artistID)
+    albumResults=albumResults['items']
+    text=""
+    for item in albumResults:
+        text+="\nAlbum: "+item['name']+"\n"
+        #text['font']=('consolas', '9')
+        albumID=item['id']
+        albumArt=item['images'][0]['url']
+        trackResults=spotifyObject.album_tracks(albumID)
+        trackResults=trackResults['items']
+        for item in trackResults:
+            text+=str(z)+": "+item['name']+"\n"
+            trackURIs.append(item['uri'])
+            trackArt.append(albumArt)
+            z+=1
+        #see album art
+    txt.delete('1.0',END)
+    txt.insert(INSERT,text)
+
+    btnShowPic=Button(btnFrame,text="picture",width=7,command=lambda:openNewWindow(url))
+    btnShowPic.grid(row=0,column=3)
+    playFrame.grid()
+    entry.delete('0',END)
+    entry.insert('0',"")
+
+
+def playNumberSong(songNumber,entry):
+    global trackURIs
+    global trackArt
+    global z
+    try:
+        trackSelectionList=[]
+        trackSelectionList.append(trackURIs[int(songNumber)])
+        spotifyObject.start_playback(deviceID,None,trackSelectionList)
+    except: messagebox.showinfo("Attention", "Was not able to play chosen song number. Please try again")
+             
+    entry.delete('0',END)
+    entry.insert('0',"")
+    
+def openNewWindow(url): #Open window to display picture of artist. 
+    newwin = Toplevel(root)
+    changeImage(url)
+    raw_data = urllib.request.urlopen(url).read()
+    im = Image.open(io.BytesIO(raw_data))
+    im = im.resize((300, 320), Image.ANTIALIAS)
+    imageArtist =ImageTk.PhotoImage(im)
+    lblImg=Label(newwin,image=imageArtist)
+    lblImg.image=imageArtist
+    lblImg.pack()
+    
+    
+#albumDetails
+trackURIs=[]
+trackArt=[]
+z=0
+
+def songs():
     global voteCount
     mainFrameGroup.place_forget()
     mainFrameApp.place_forget()
     mainFrameProfile.place_forget()
     mainFrameVote.place(x=0,y=25,relheight="1",relwidth="0.8962")
     if (voteCount==0):
-        lblVote=Label(mainFrameVote,text="This is the vote room",font=("Helvetica",12,"bold", "italic"))
-        lblVote.pack()
+        scrollFrame=Frame(mainFrameVote,bg="green")
+        yscrollbar = Scrollbar(scrollFrame)
+        yscrollbar.pack(side = RIGHT, fill = Y)
+        xscrollbar = Scrollbar(scrollFrame,orient='horizontal')
+        text = Text(scrollFrame, width = 48, height = 11, wrap = NONE,
+                    yscrollcommand = yscrollbar.set,xscrollcommand=xscrollbar.set)
+        text['font']=('consolas', '9')
+        text.pack()
+        xscrollbar.pack(side = BOTTOM, fill = X,anchor='w')
+        yscrollbar.config(command = text.yview)
+        xscrollbar.config(command = text.xview)
+        """txt = ScrolledText(mainFrameVote, width=48,height=13)
+        txt['font'] = ('consolas', '9')"""
+        searchFrame=Frame(mainFrameVote,bg="green")
+        e = Entry(searchFrame, width=15)
+        lblArtist=Label(searchFrame,text="Please enter an artist:",bg="green")
+        lblArtist.grid(row=0,column=0)
+        e.grid(row=0,column=1)
+        #txt.grid(row=1,columnspan=4,padx=1)
+        btnAlbum=Button(searchFrame,text="search",width=7,command=lambda:findArtistAlbums(e.get(),text,searchFrame,playFrame,e))
+        btnAlbum.grid(row=0,column=2)
+        playFrame=Frame(mainFrameVote,bg="green")
+        lblSong=Label(playFrame,text="Please enter a number to play a song:",bg="green")
+        lblSong.grid(row=0,ipadx=5)
+        e2 = Entry(playFrame, width=5)
+        e2.grid(row=0,column=1,ipadx=5)
+        btnAlbum=Button(playFrame,text="play",width=7,command=lambda:playNumberSong(e2.get(),e2))
+        btnAlbum.grid(row=0,column=2,padx=5,pady=2)
+        searchFrame.grid()
+        scrollFrame.grid()
     voteCount+=1
 
 def profiles():
@@ -288,7 +414,7 @@ def profiles():
         imageProfile =ImageTk.PhotoImage(pImage)
         lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
         lblProfileImage.image=imageProfile
-        print("Error, cannot grab profile image")
+        
     playlists = spotifyObject.user_playlists(user['id'])
     for playlist in playlists['items']:
             if (playlist['owner']['id'] == user['id']):
@@ -307,7 +433,7 @@ def profiles():
 #Getting user id
 user=spotifyObject.current_user()
 usrID=user['id']
-print(usrID)
+
 
 
 #Finds all active Groups that user is a part of
@@ -341,7 +467,7 @@ def findMyGroups(usrID,txt):
             for row in records:
                 text+=(row[0]+"\n")
         except:
-            print("No active groups")
+            messagebox.showinfo('Attention', "There's no active groups")
         finally:
             txt.delete('1.0',END)
             txt.insert(INSERT,text)
@@ -362,6 +488,20 @@ def checkGroup(groupName):
         except:
             return False
 
+def checkGroupPlaying(groupName):
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from GroupPlaying where group_name="+"'"+groupName+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            records[0][0]==groupName
+            return True
+        except:
+            return False
+    else:
+        massegebox.showinfo('Attention', 'Lost connection to server')
+
 
 #Check if user is already a part of the group:
 def checkJoin(groupName):
@@ -373,14 +513,11 @@ def checkJoin(groupName):
         try:
             for row in records:
                 if row[0]==usrID:
-                    print("User already part of group")
                     return True #User is already part of the group
                 else:
-                    print("User is not part of group")
-                    return False
+                    return False #User is not part of the group
         except:
-            print("User is not part of group")
-            return False
+            return False #User is not part of group
            
     
     
@@ -390,13 +527,14 @@ def checkJoin(groupName):
 def checkUser(usrID):
     global connection
     if (connection.is_connected()):
+        print(usrID)
         sqlQuery = "select username from User where username="+"'"+usrID+"'";
         cursor = connection.cursor()
         cursor.execute(sqlQuery)
         records = cursor.fetchall()
         try:
+            print(records[0][0])
             records[0][0]==usrID
-            print("already a user!")
             cursor.close()
             return
         except:
@@ -405,7 +543,6 @@ def checkUser(usrID):
             cursor = connection.cursor()
             args=(usrID)
             cursor.callproc('addUser',args=(usrID,))
-            print("user created")
             connection.commit()
             cursor.close()
             
@@ -418,13 +555,13 @@ def checkUser(usrID):
 def createGroup(groupName,txtMyGroup,entry):
     global connection
     connect()
+    print(usrID)
     checkUser(usrID)
     #Check to see that there's not already a group with the same name
     if (not checkGroup(groupName)): 
             cursor = connection.cursor()
             cursor.callproc('addGroup',args=(groupName,usrID,1))
             cursor.callproc('addPart',args=(usrID,groupName,1))
-            print("group created")
             entry.delete('0',END)
             entry.insert('0',"")
             cursor.close()
@@ -441,7 +578,6 @@ def joinGroup(groupName,txtActiveGroups,entry):
     global connection
     connect()
     checkUser(usrID)
-    print("JADDA")
     entry.delete('0',END)
     entry.insert('0',"")
     #Check to see that there exist a group with with name 'groupName'
@@ -453,9 +589,9 @@ def joinGroup(groupName,txtActiveGroups,entry):
             connection.commit()
             cursor.close()
             messagebox.showinfo('Attention','You have now joined the group '+groupName)
-           
-        findActiveGroups(usrID,txtActiveGroups)
-        listenToGroup(groupName)
+            
+        listenToGroup(groupName,usrID,txtActiveGroups)
+        
     else:
          messagebox.showinfo('Attention',"There's no group named "+groupName)
          return
@@ -480,14 +616,135 @@ def checkHost(groupName):
             print("The user is not Host")
             
    
+def syncToGroup():
+    if isHost==(''):
+        return
+    if isHost==(True):
+        push()
+    else:
+        pull()
+        
+def push():
+    global isHost
+    global syncGroup
+    if(isHost!=True):
+        return
+    try:
+        if connection.is_connected():
+            print("pushing")
+            track=spotifyObject.current_user_playing_track()
+            uri=track['item']['uri']
+            durationMS=str(track['progress_ms'])
+            isPlaying=track['is_playing']
+            cursor = connection.cursor()
+            cursor.callproc('updateGroupPlaying',args=(syncGroup,uri,durationMS,isPlaying))
+            cursor.close()
+            connection.commit()
+            threading.Timer(5.0, push).start()
+    except Error as e:
+        print("her er feilen")
+        messagebox.showinfo('attention',"error while connecting to MySQL")
+
+def pull():
+    global isHost
+    global syncGroup
+    if (isHost!=False):
+        thredning.cancel()
+        return
+    connect()
+    try:
+        if connection.is_connected():
+            print("pulling")
+            db_Info = connection.get_server_info()
+            cursor = connection.cursor()
+            cursor.execute("select database();")
+            record = cursor.fetchone()
+            sqlQuery1 = "select track_uri from GroupPlaying where group_name='"+syncGroup+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery1)
+            records = cursor.fetchall()
+            track_uri=""
+            try:
+                records[0][0]
+                for row in records:
+                    track_uri=str(row[0])
+            except:
+                messagebox.showinfo('attention',"Can't listen to this group anymore, because host has left!")
+                return 
+            sqlQuery2 = "select position from GroupPlaying where group_name='"+syncGroup+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery2)
+            records = cursor.fetchall()
+            for row in records:
+                position=row[0]
+            sqlQuery2 = "select isPaused from GroupPlaying where group_name='"+syncGroup+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery2)
+            records = cursor.fetchall()
+            for row in records:
+                isPaused=row[0]
+            track=spotifyObject.current_user_playing_track()
+            uri=track['item']['uri']
+            durationMS=str(track['progress_ms'])
+            isPlaying=track['is_playing']
+            if (isPaused==0 and isPlaying==True): #If the song is playing, then pause the song
+                spotifyObject.pause_playback(deviceID)
+                print("1")
+            elif (isPaused==1 and isPlaying==False):
+                trackList=[]
+                trackList.append(track_uri)
+                spotifyObject.start_playback(deviceID,None,trackList)
+                spotifyObject.seek_track(int(position), deviceID)
+                print("2")
+
+            elif (isPaused==1 and not (track_uri==uri and -10000<int(position)-int(durationMS)<10000)):
+                  trackList=[]
+                  trackList.append(track_uri)
+                  spotifyObject.start_playback(deviceID,None,trackList)
+                  spotifyObject.seek_track(int(position), deviceID)
+                  print("3")
+            
+            disconnect()
+            threading.Timer(5.00, pull).start()
+            
+    except Error as e:
+        messagebox.showinfo('Attention',"error while connecting to MySQL")
+
+    
+
 
 #Check if group is avtive, then listens to the group       
-def listenToGroup(groupName):
+def listenToGroup(groupName,usrID,txtActiveGroups):
     global lblListenGroup
-    if isActive(groupName):
+    global syncGroup
+    global isHost
+    if (isActive(syncGroup) and checkHost(groupName)): #If host alrady pulls information to user
+        connect()
+        cursor = connection.cursor()
+        cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
+        cursor.close()
+        connection.commit()
+        isHost=""
+        messagebox.showinfo('Attention',"You you just left group "+syncGroup)
+        
+    
+    if (isActive(groupName) or checkHost(groupName)): #Either the group is active, or the user is host and can make the group active
         isHost=checkHost(groupName)
         syncGroup=groupName
-        #syncToGroup(groupName) ##This function needs to check the isHost variable and push/pull accordingly
+        if (isHost): ##Need to have this code here even though it's in the pull function, because of the finActiveGroups needs to be updated only once. 
+            try:
+                track=spotifyObject.current_user_playing_track()
+                uri=track['item']['uri']
+                durationMS=str(track['progress_ms'])
+                isPlaying=track['is_playing']
+                cursor = connection.cursor()
+                cursor.callproc('addGroupPlaying',args=(groupName,uri,durationMS,isPlaying))
+                cursor.close()
+                connection.commit()
+            except Error as e:
+                    messagebox.showinfo('attention',"error while connecting to MySQL")
+        findActiveGroups(usrID,txtActiveGroups)
+        syncToGroup() ##This function needs to check the isHost variable and push/pull accordingly
         lblListenGroup['text']="You're now listening to group "+groupName
     else:
         messagebox.showinfo('Attention',"You can't listen to the group "+groupName+",because it's inactive")
@@ -504,17 +761,16 @@ def isActive(groupName):
         try:
             records[0][0]==groupName #This means the group is active
             cursor.close()
-            print("The group is active")
             return True
         except:
             cursor.close()
             return False
-            print("The group is not active")
             
     
 
 def connect():
     global connection
+    global cursor
     try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
                                              port='3307',
@@ -529,10 +785,12 @@ def connect():
             cursor.execute("select database();")
             record = cursor.fetchone()
             print ("you're connected to - ", record)
+            cursor.close()
+            connection.commit()
            
 
     except Exception as e:
-        print ("error while connecting to MySQL", e)
+        messagebox.showinfo("Attention","error while connecting to MySQL")
 
 
 
@@ -543,7 +801,6 @@ def disconnect():
     global connection
     if(connection.is_connected()):
         connection.close()
-        print("MySQL connection is closed")
 
 
 def showGroup(lblListenGroup):
@@ -636,22 +893,15 @@ lblProfile=Label(aboveFrame,text="Spotify_ sync_logo",fg="black",bg="green")
 btnProfile.pack(side=RIGHT,ipadx=5)
 lblProfile.pack()
 
-menubar = Menu(btnProfile)
+"""menubar = Menu(btnProfile)
 setting = Menu(menubar, tearoff=0)
 setting.add_command(label="something")
 setting.add_command(label="something")
 setting.add_separator()
 setting.add_command(label="Log out", command=root.quit)
 menubar.add_cascade(label="Settings", menu=setting)
-
-
-
-
-
-
-
 # display the menu
-root.config(menu=menubar)
+root.config(menu=menubar)"""
 
 #label.grid(ipadx=105,ipady=2,sticky=N+W)
 #btnSettings.grid(row=0,column=2,sticky=E)
@@ -682,7 +932,7 @@ music=PhotoImage(file="musicIcon.png")
 musicSmall=PhotoImage(file="musicSmallIcon.png")
 mute=PhotoImage(file="unmute.png")
 unmute=PhotoImage(file="mute.png")
-vote=PhotoImage(file="voteIcon.png")
+search=PhotoImage(file="searchIcon.png")
 app=PhotoImage(file="appIcon.png")
 nextSong=PhotoImage(file="nextIcon.png")
 playSong=PhotoImage(file="playIcon.png")
@@ -691,10 +941,10 @@ pauseSong=PhotoImage(file="pauseIcon.png")
 group=PhotoImage(file="groupIcon.png")
 btnMusic=Button(menyFrame,text="music",image=musicSmall,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green", command=backToMusic)
 btnMusic.grid()
+btnSong=Button(menyFrame,text="song", image=search,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=songs)
+btnSong.grid()
 btnApp=Button(menyFrame,text="app", image=app,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=apps)
 btnApp.grid()
-btnVote=Button(menyFrame,text="vote", image=vote,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=votes)
-btnVote.grid()
 btnGroup=Button(menyFrame,text="group", image=group,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=groups)
 btnGroup.grid()
 
@@ -761,11 +1011,11 @@ labelImage.grid(row=0,column=8,rowspan=3,ipady=5,padx=45)
 
 
 ##Accessing the database
-input("Connect to database")
 track=spotifyObject.current_user_playing_track()
 uri=track['item']['uri']
-print(uri)
 durationMS=str(track['progress_ms'])
+isPlaying=track['is_playing']
+
 
 
 try:
@@ -774,7 +1024,7 @@ try:
                                              database='byteme',
                                              user='byteme_rw',
                                              password='password')
-        if connection.is_connected():
+        """if connection.is_connected():
             db_Info = connection.get_server_info()
             print("Connected to MySQL database... MySQL Server version on ", db_Info)
 
@@ -790,17 +1040,21 @@ try:
             records = cursor.fetchall()
             for row in records:
                 name=row[0]
-            #
                 
                 
         if (name=="mr.vollset"):
             sqlQuery1="update GroupPlaying set track_uri="+"'"+uri+"'"+" where group_name='byteme';"
             sqlQuery2="update GroupPlaying set position="+durationMS+" where group_name='byteme';"
+
             cursor.execute(sqlQuery1)
             cursor.execute(sqlQuery2)
             record=cursor.fetchone()
+            cursor = connection.cursor()
+            cursor.callproc('updateGroupPlaying',args=('byteme',uri,durationMS,isPlaying))
+            cursor.close()
+            connection.commit()  
             print(record)
-            connection.commit()
+            connection.commit()"""
            
             
 except Error as e:
@@ -812,18 +1066,45 @@ except Error as e:
 finally:
 
     if(connection.is_connected()):
-        cursor.close()
         connection.close()
         print("MySQL connection is closed")
 
+
 #readDbVersion()
+
+
+
+def onClosing():
+    global isHost
+    global syncGroup
+    global endProgram
+    global cursor
+    msg=messagebox.askokcancel("Quit", "Do you want to quit?")
+    if(msg):
+        if (isHost==True):
+            connect()
+            cursor = connection.cursor()
+            cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
+            cursor.close()
+            connection.commit()
+            connection.close()
+        endProgram=True
+        isHost=""
+        try:
+            os.remove(f".cache-"+urlID)
+        except:
+            print()
+        root.quit()
+        root.destroy()
+    
+    
+
+root.protocol("WM_DELETE_WINDOW", onClosing)
+
 
 print("End of a Python Database Programming Exercise\n\n")
 
 
 
-
-
-
-
+update()
 root.mainloop()
