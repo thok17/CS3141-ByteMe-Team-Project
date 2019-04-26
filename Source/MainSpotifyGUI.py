@@ -112,37 +112,42 @@ if artist!='':
     print("Currently playing: " +artist+"-"+track)
 
 def nextTrack():
-    nextTrack=spotifyObject.next_track(deviceID)
-    track=spotifyObject.current_user_playing_track()
-    playback=spotifyObject.current_playback()
-    artist=track['item']['artists'][0]['name']
-    url=track['item']['album']['images'][0]['url']
-    trackNumber=track['item']['track_number']
-    album=track['item']['album']['name']
-    track=track['item']['name']
-    changeImage(url)
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-    label_1_song['text']="Song: {}".format(track)
-    label_1_artist['text']="Arist: {}".format(artist)
-    label_album['text']="Album: {}".format(album)
-    label_trackNumber['text']="Track number: {}".format(trackNumber)
-    label_followers['text']="Followers: {}".format(followers)
-
+    try:
+        nextTrack=spotifyObject.next_track(deviceID)
+        track=spotifyObject.current_user_playing_track()
+        playback=spotifyObject.current_playback()
+        artist=track['item']['artists'][0]['name']
+        url=track['item']['album']['images'][0]['url']
+        trackNumber=track['item']['track_number']
+        album=track['item']['album']['name']
+        track=track['item']['name']
+        changeImage(url)
+        searchResults=spotifyObject.search(artist,1,0,"artist")
+        name=searchResults['artists']['items'][0]
+        followers=name['followers']['total']
+        label_1_song['text']="Song: {}".format(track)
+        label_1_artist['text']="Arist: {}".format(artist)
+        label_album['text']="Album: {}".format(album)
+        label_trackNumber['text']="Track number: {}".format(trackNumber)
+        label_followers['text']="Followers: {}".format(followers)
+    except:
+        premiumMessage()
 def muteUnmuteTrack():
-    global mute
-    global btnMute
-    global volume
-    volume=devices['devices'][0]['volume_percent']
-    if(btnMute.image==mute):
-        volume=spotifyObject.volume(0, deviceID)
-        btnMute['image']=unmute
-        btnMute.image=unmute
-    else:
-        volume=spotifyObject.volume(volume, deviceID)
-        btnMute['image']=mute
-        btnMute.image=mute
+    try:
+        global mute
+        global btnMute
+        global volume
+        volume=devices['devices'][0]['volume_percent']
+        if(btnMute.image==mute):
+            volume=spotifyObject.volume(0, deviceID)
+            btnMute['image']=unmute
+            btnMute.image=unmute
+        else:
+            volume=spotifyObject.volume(volume, deviceID)
+            btnMute['image']=mute
+            btnMute.image=mute
+    except:
+        premiumMessage()
 
 """def playPauseUpdate():
     track=spotifyObject.current_user_playing_track()
@@ -221,36 +226,42 @@ def update():
     
     
 def previousTrack():
-    previousTrack=spotifyObject.previous_track(deviceID)
-    track=spotifyObject.current_user_playing_track()
-    playback=spotifyObject.current_playback()
-    artist=track['item']['artists'][0]['name']
-    url=track['item']['album']['images'][0]['url']
-    trackNumber=track['item']['track_number']
-    album=track['item']['album']['name']
-    track=track['item']['name']
-    changeImage(url)
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    name=searchResults['artists']['items'][0]
-    followers=name['followers']['total']
-    label_1_song['text']="Song: {}".format(track)
-    label_1_artist['text']="Arist: {}".format(artist)
-    label_album['text']="Album: {}".format(album)
-    label_trackNumber['text']="Track number: {}".format(trackNumber)
-    label_followers['text']="Followers: {}".format(followers)
+    try:
+        previousTrack=spotifyObject.previous_track(deviceID)
+        track=spotifyObject.current_user_playing_track()
+        playback=spotifyObject.current_playback()
+        artist=track['item']['artists'][0]['name']
+        url=track['item']['album']['images'][0]['url']
+        trackNumber=track['item']['track_number']
+        album=track['item']['album']['name']
+        track=track['item']['name']
+        changeImage(url)
+        searchResults=spotifyObject.search(artist,1,0,"artist")
+        name=searchResults['artists']['items'][0]
+        followers=name['followers']['total']
+        label_1_song['text']="Song: {}".format(track)
+        label_1_artist['text']="Arist: {}".format(artist)
+        label_album['text']="Album: {}".format(album)
+        label_trackNumber['text']="Track number: {}".format(trackNumber)
+        label_followers['text']="Followers: {}".format(followers)
+    except:
+        premiumMessage()
 
 def pausePlayTrack():
-    global playSong
-    global pauseSong
-    global btnPause    
-    if (btnPause.image==playSong):
-        #btnPause['image']=pauseSong
-        #btnPause.image=pauseSong
-        start_playback=spotifyObject.start_playback(deviceID)
-    else:
-        pause_playback=spotifyObject.pause_playback(deviceID)
-        #btnPause['image']=playSong
-        #btnPause.image=playSong
+    try:
+        global playSong
+        global pauseSong
+        global btnPause    
+        if (btnPause.image==playSong):
+            #btnPause['image']=pauseSong
+            #btnPause.image=pauseSong
+            start_playback=spotifyObject.start_playback(deviceID)
+        else:
+            pause_playback=spotifyObject.pause_playback(deviceID)
+            #btnPause['image']=playSong
+            #btnPause.image=playSong
+    except:
+        premiumMessage()
     
 
 def apps():
@@ -275,44 +286,47 @@ def rps1():
     
 
 def findArtistAlbums(artist,txt,btnFrame,playFrame,entry):
-    searchResults=spotifyObject.search(artist,1,0,"artist")
-    artist=searchResults['artists']['items'][0]
-    url=artist['images'][0]['url']
-    artistID=artist['id']
+    try:
+        searchResults=spotifyObject.search(artist,1,0,"artist")
+        artist=searchResults['artists']['items'][0]
+        url=artist['images'][0]['url']
+        artistID=artist['id']
 
-        #album details
-    global trackURIs
-    global trackArt
-    global z
-    trackURIs=[]
-    trackArt=[]
-    z=0
+            #album details
+        global trackURIs
+        global trackArt
+        global z
+        trackURIs=[]
+        trackArt=[]
+        z=0
 
-        #extract album data
-    albumResults=spotifyObject.artist_albums(artistID)
-    albumResults=albumResults['items']
-    text=""
-    for item in albumResults:
-        text+="\nAlbum: "+item['name']+"\n"
-        #text['font']=('consolas', '9')
-        albumID=item['id']
-        albumArt=item['images'][0]['url']
-        trackResults=spotifyObject.album_tracks(albumID)
-        trackResults=trackResults['items']
-        for item in trackResults:
-            text+=str(z)+": "+item['name']+"\n"
-            trackURIs.append(item['uri'])
-            trackArt.append(albumArt)
-            z+=1
-        #see album art
-    txt.delete('1.0',END)
-    txt.insert(INSERT,text)
+            #extract album data
+        albumResults=spotifyObject.artist_albums(artistID)
+        albumResults=albumResults['items']
+        text=""
+        for item in albumResults:
+            text+="\nAlbum: "+item['name']+"\n"
+            #text['font']=('consolas', '9')
+            albumID=item['id']
+            albumArt=item['images'][0]['url']
+            trackResults=spotifyObject.album_tracks(albumID)
+            trackResults=trackResults['items']
+            for item in trackResults:
+                text+=str(z)+": "+item['name']+"\n"
+                trackURIs.append(item['uri'])
+                trackArt.append(albumArt)
+                z+=1
+            #see album art
+        txt.delete('1.0',END)
+        txt.insert(INSERT,text)
 
-    btnShowPic=Button(btnFrame,text="picture",width=7,command=lambda:openNewWindow(url))
-    btnShowPic.grid(row=0,column=3)
-    playFrame.grid()
-    entry.delete('0',END)
-    entry.insert('0',"")
+        btnShowPic=Button(btnFrame,text="picture",width=7,command=lambda:openNewWindow(url))
+        btnShowPic.grid(row=0,column=3)
+        playFrame.grid()
+        entry.delete('0',END)
+        entry.insert('0',"")
+    except:
+        messagebox.showinfo('Attention', "Error. Artist not found. Please try again.")
 
 
 def playNumberSong(songNumber,entry):
@@ -352,7 +366,7 @@ def songs():
     mainFrameProfile.place_forget()
     mainFrameVote.place(x=0,y=25,relheight="1",relwidth="0.8962")
     if (voteCount==0):
-        scrollFrame=Frame(mainFrameVote,bg="green")
+        scrollFrame=Frame(mainFrameVote,bg="limegreen")
         yscrollbar = Scrollbar(scrollFrame)
         yscrollbar.pack(side = RIGHT, fill = Y)
         xscrollbar = Scrollbar(scrollFrame,orient='horizontal')
@@ -365,16 +379,16 @@ def songs():
         xscrollbar.config(command = text.xview)
         """txt = ScrolledText(mainFrameVote, width=48,height=13)
         txt['font'] = ('consolas', '9')"""
-        searchFrame=Frame(mainFrameVote,bg="green")
+        searchFrame=Frame(mainFrameVote,bg="limegreen")
         e = Entry(searchFrame, width=15)
-        lblArtist=Label(searchFrame,text="Please enter an artist:",bg="green")
+        lblArtist=Label(searchFrame,text="Please enter an artist:",bg="limegreen")
         lblArtist.grid(row=0,column=0)
         e.grid(row=0,column=1)
         #txt.grid(row=1,columnspan=4,padx=1)
         btnAlbum=Button(searchFrame,text="search",width=7,command=lambda:findArtistAlbums(e.get(),text,searchFrame,playFrame,e))
         btnAlbum.grid(row=0,column=2)
-        playFrame=Frame(mainFrameVote,bg="green")
-        lblSong=Label(playFrame,text="Please enter a number to play a song:",bg="green")
+        playFrame=Frame(mainFrameVote,bg="limegreen")
+        lblSong=Label(playFrame,text="Please enter a number to play a song:",bg="limegreen")
         lblSong.grid(row=0,ipadx=5)
         e2 = Entry(playFrame, width=5)
         e2.grid(row=0,column=1,ipadx=5)
@@ -406,13 +420,13 @@ def profiles():
         pImage = Image.open(io.BytesIO(raw_image))
         pImage = pImage.resize((100, 100), Image.ANTIALIAS)
         imageProfile =ImageTk.PhotoImage(pImage)
-        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="#262626", fg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
         lblProfileImage.image=imageProfile
     except:
         pImage = Image.open('Default_user_Profile.png')
         pImage = pImage.resize((100, 100), Image.ANTIALIAS)
         imageProfile =ImageTk.PhotoImage(pImage)
-        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+        lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="#262626", fg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
         lblProfileImage.image=imageProfile
         
     playlists = spotifyObject.user_playlists(user['id'])
@@ -423,9 +437,9 @@ def profiles():
 
     if (profileCount==0):
         lblProfileImage.pack()
-        lblName=Label(mainFrameProfile,text="Username: "+displayName,bg="white",font=("Helvetica",12,"bold", "italic"))
+        lblName=Label(mainFrameProfile,text="Username: "+displayName,bg="black", fg="white",font=("Helvetica",12,"bold", "italic"))
         lblName.pack()
-        lblFollowers=Label(mainFrameProfile,text="Number of followers: "+str(followers),bg="white",font=("Helvetica",12,"bold", "italic"))
+        lblFollowers=Label(mainFrameProfile,text="Number of followers: "+str(followers),bg="black", fg="white",font=("Helvetica",12,"bold", "italic"))
         lblFollowers.pack()
     profileCount+=1
 
@@ -527,11 +541,13 @@ def checkJoin(groupName):
 def checkUser(usrID):
     global connection
     if (connection.is_connected()):
+        print(usrID)
         sqlQuery = "select username from User where username="+"'"+usrID+"'";
         cursor = connection.cursor()
         cursor.execute(sqlQuery)
         records = cursor.fetchall()
         try:
+            print(records[0][0])
             records[0][0]==usrID
             cursor.close()
             return
@@ -553,6 +569,7 @@ def checkUser(usrID):
 def createGroup(groupName,txtMyGroup,entry):
     global connection
     connect()
+    print(usrID)
     checkUser(usrID)
     #Check to see that there's not already a group with the same name
     if (not checkGroup(groupName)): 
@@ -803,11 +820,11 @@ def disconnect():
 def showGroup(lblListenGroup):
     global syncGroup
     if (syncGroup==""):
-            lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="green")
+            lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="black", fg="white", font=("Helvetica",12,"bold"))
             lblListenGroup.grid(row=0,columnspan=2,padx=80,pady=5)
             
     else:
-            lblListenGroup=Label(mainFrameGroup,text="You are listening to group "+syncGroup,bg="green")
+            lblListenGroup=Label(mainFrameGroup,text="You are listening to group "+syncGroup,bg="black", fg="white", font=("Helvetica",12,"bold"))
             lblListenGroup.grid(row=0,columnspan=2)
     
 
@@ -824,17 +841,17 @@ def groups():
     
     if (groupCount==0):
         if (syncGroup==""):
-            lblListenGroup=Label(mainFrameGroup,text="Listening to no groups",bg="green",width=55)
-            lblListenGroup.grid(row=0,columnspan=2,pady=5)
+            lblListenGroup=Label(mainFrameGroup,text="Listening to no groups",bg="black", fg="white", font=("Helvetica",10,"bold"),width=45)
+            lblListenGroup.grid(row=0,column=0,columnspan=2,sticky=W)
         else:
-            lblListenGroup=Label(mainFrameGroup,text="Listening to group "+syncGroup,bg="green")
+            lblListenGroup=Label(mainFrameGroup,text="Listening to group "+syncGroup,bg="black", fg="white", font=("Helvetica",10,"bold"))
             lblListenGroup.grid(row=0,columnspan=2)
 
-        lblActiveGroup=Label(mainFrameGroup,text="My active groups: ",bg="green")
-        lblActiveGroup.grid(row=1, column=0,ipadx=20,ipady=5)
+        lblActiveGroup=Label(mainFrameGroup,text="My active groups: ",bg="black", fg="white", font=("Helvetica",10,"bold"))
+        lblActiveGroup.grid(row=1, column=0,ipadx=5,ipady=5)
 
-        lblMyGroup=Label(mainFrameGroup,text="My own groups: ",bg="green")
-        lblMyGroup.grid(row=1,column=1,ipadx=5,ipady=5,sticky=W)
+        lblMyGroup=Label(mainFrameGroup,text="My own groups: ",bg="black", fg="white", font=("Helvetica",10,"bold"))
+        lblMyGroup.grid(row=1,column=1,ipady=5,sticky=W)
 
         txt = ScrolledText(mainFrameGroup, width=10,height=3)
         txt['font'] = ('consolas', '9')
@@ -846,18 +863,18 @@ def groups():
         txt2.grid(row=2,column=1,sticky=W)
         findMyGroups(usrID,txt2)
         
-        lbljoinGroup=Label(mainFrameGroup,text="Join group: ",bg="green")
+        lbljoinGroup=Label(mainFrameGroup,text="Join group: ",bg="black", fg="white", font=("Helvetica",8,"bold"))
         lbljoinGroup.grid(row=3)
         e = Entry(mainFrameGroup, width=15)
         e.grid()
         btnJoin=Button(mainFrameGroup,text="join",command=lambda:joinGroup(e.get(),txt,e))
         btnJoin.grid()
-        lblCreateGroup=Label(mainFrameGroup,text="Create group : ",bg="green")
+        lblCreateGroup=Label(mainFrameGroup,text="Create group : ",bg="black", fg="white", font=("Helvetica",8,"bold"))
         lblCreateGroup.grid(row=3,column=1,sticky=W,ipadx=10)
         e2 = Entry(mainFrameGroup, width=15)
-        e2.grid(row=4,column=1,padx=5,sticky=W)
+        e2.grid(row=4,column=1,sticky=W)
         btnCreate=Button(mainFrameGroup,text="create",command=lambda:createGroup(e2.get(),txt2,e2))
-        btnCreate.grid(row=5,column=1,sticky=W,padx=30)
+        btnCreate.grid(row=5,column=1,sticky=W,padx=25)
         #lblListenGroup=Label(mainFrameGroup,text="You are not listening to any groups",bg="green")
         #lblListenGroup.grid(row=0,columnspan=2,padx=80,pady=5)
         
@@ -871,22 +888,33 @@ def backToMusic():
     mainFrameVote.place_forget()
     mainFrameProfile.place_forget()
     mainFrameGroup.place_forget()
+
+def premiumMessage():
+    messagebox.showinfo('Attention', "You must be a premium user to utilize this action.")
     
     
 root=Tk()
-root.configure(background="green")
-root.geometry("400x260")
+
+windowWidth = root.winfo_reqwidth()
+windowHeight = root.winfo_reqheight()
+
+#positionRight = int(root.winfo_screenwidth()/2 - windowWidth/2)
+#positionDown = int(root.winfo_screenheight()/2 - windowHeight/2)
+positionRight = int(root.winfo_screenwidth()/2)
+positionDown = int(root.winfo_screenheight()/2)
+root.configure(background="black")
+root.geometry("400x260+{}+{}".format(positionRight, positionDown))
 root.maxsize(400,260)
 root.title('Spotify sync')
 
 
 
 
-aboveFrame = Frame(root,bg="green")
+aboveFrame = Frame(root,bg="limegreen")
 aboveFrame.pack(side=TOP,fill=X)
 profile=PhotoImage(file="profileIcon.png")
-btnProfile=Button(aboveFrame,image=profile,fg="black", bg="green",command=profiles)
-lblProfile=Label(aboveFrame,text="Spotify_ sync_logo",fg="black",bg="green")
+btnProfile=Button(aboveFrame,image=profile,fg="black", bg="limegreen",command=profiles)
+lblProfile=Label(aboveFrame,text="Spotify Sync",fg="black",bg="limegreen",font=("Helvetica",14,"bold") )
 btnProfile.pack(side=RIGHT,ipadx=5)
 lblProfile.pack()
 
@@ -903,25 +931,25 @@ root.config(menu=menubar)"""
 #label.grid(ipadx=105,ipady=2,sticky=N+W)
 #btnSettings.grid(row=0,column=2,sticky=E)
 
-bottomLeftFrame=Frame(root,bg="white")
-menyFrame=Frame(root,bg="green")
+bottomLeftFrame=Frame(root,bg="black")
+menyFrame=Frame(root,bg="limegreen")
 menyFrame.pack(side=RIGHT,fill=Y)
 bottomLeftFrame.pack(fill=X)
-bottomRightFrame=Frame(root,bg="white")
+bottomRightFrame=Frame(root,bg="#262626")
 bottomRightFrame.pack(fill=X)
 
 #Frames for our app-layout
-mainFrameApp=Frame(root,bg="green")
+mainFrameApp=Frame(root,bg="black")
 middleFrame=Frame(mainFrameApp,bg="black")
 
 #Frame for our vote-layout
-mainFrameVote=Frame(root,bg="green")
+mainFrameVote=Frame(root,bg="limegreen")
 
 #Frame for our group-layout
-mainFrameGroup=Frame(root,bg="green")
+mainFrameGroup=Frame(root,bg="black")
 
 #Frame for our profile-layout
-mainFrameProfile=Frame(root,bg="white")
+mainFrameProfile=Frame(root,bg="black")
 
 
 
@@ -936,24 +964,24 @@ playSong=PhotoImage(file="playIcon.png")
 pSong=PhotoImage(file="pIcon.png")
 pauseSong=PhotoImage(file="pauseIcon.png")
 group=PhotoImage(file="groupIcon.png")
-btnMusic=Button(menyFrame,text="music",image=musicSmall,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green", command=backToMusic)
+btnMusic=Button(menyFrame,text="music",image=musicSmall,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="limegreen", command=backToMusic)
 btnMusic.grid()
-btnSong=Button(menyFrame,text="song", image=search,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=songs)
+btnSong=Button(menyFrame,text="song", image=search,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="limegreen",command=songs)
 btnSong.grid()
-btnApp=Button(menyFrame,text="app", image=app,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=apps)
+btnApp=Button(menyFrame,text="app", image=app,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="limegreen",command=apps)
 btnApp.grid()
-btnGroup=Button(menyFrame,text="group", image=group,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="green",command=groups)
+btnGroup=Button(menyFrame,text="group", image=group,compound=TOP,borderwidth=2,relief="groove",fg="black", bg="limegreen",command=groups)
 btnGroup.grid()
 
 
 #label_1=Label(bottomLeftFrame,image=music,bg="white",anchor=W, fg="white")
-labelCurrentlyPlaying=Label(bottomLeftFrame,text="Currently playing: ",bg="white",fg="black",font=("Helvetica",12,"bold"),anchor=W)
-label_1_song=Label(bottomLeftFrame,text="Song: "+ track+"",bg="white",fg="black",anchor=W,width=30)
-label_1_artist=Label(bottomLeftFrame,text="Artist: "+artist+"",bg="white",fg="black",width=30,anchor=W)
-label_album=Label(bottomLeftFrame,text="Album: "+ album+"",bg="white",fg="black",anchor=W,width=30)
-label_trackNumber=Label(bottomLeftFrame,text="Track number: "+ str(trackNumber)+"",bg="white",fg="black",anchor=W,width=30)
-lblDuration=Label(bottomLeftFrame,text="Duration: "+ str(duration_ms)+"",bg="white",fg="black",anchor=W,width=30)
-label_followers=Label(bottomLeftFrame,text="Followers: "+ str(followers)+"",bg="white",fg="black",anchor=W,width=30)
+labelCurrentlyPlaying=Label(bottomLeftFrame,text="Currently playing: ",bg="black",fg="lightgray",font=("Helvetica",12,"bold"),anchor=W)
+label_1_song=Label(bottomLeftFrame,text="Song: "+ track+"",bg="black",fg="aqua",anchor=W,width=30, font=("Helvetica", 10, "bold"))
+label_1_artist=Label(bottomLeftFrame,text="Artist: "+artist+"",bg="black",fg="lightgray",width=30,anchor=W)
+label_album=Label(bottomLeftFrame,text="Album: "+ album+"",bg="black",fg="lightgray",anchor=W,width=30)
+label_trackNumber=Label(bottomLeftFrame,text="Track number: "+ str(trackNumber)+"",bg="black",fg="lightgray",anchor=W,width=30)
+lblDuration=Label(bottomLeftFrame,text="Duration: "+ str(duration_ms)+"",bg="black",fg="lightgray",anchor=W,width=30)
+label_followers=Label(bottomLeftFrame,text="Followers: "+ str(followers)+"",bg="black",fg="lightgray",anchor=W,width=30)
 
 #label_1_duration=Label(bottomLeftFrame,text="Duration: mm:ss",bg="white",fg="black",width=35)
 
@@ -964,7 +992,7 @@ raw_data = urllib.request.urlopen(url).read()
 im = Image.open(io.BytesIO(raw_data))
 im = im.resize((100, 100), Image.ANTIALIAS)
 imageAlbum =ImageTk.PhotoImage(im)
-labelImage=Label(bottomRightFrame,image=imageAlbum,bg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
+labelImage=Label(bottomRightFrame,image=imageAlbum,bg="#262626", anchor=E,font=("Helvetica",12,"bold", "italic"))
 
 label_2_song=Label(bottomRightFrame,text="Song: X",bg="black",fg="white",width=30)
 label_2_artist=Label(bottomRightFrame,text="Artist: X",bg="black",fg="white",width=5)
