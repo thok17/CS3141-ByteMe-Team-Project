@@ -2,8 +2,8 @@ import PIL.Image
 import random
 from tkinter import *
 
-pathsToTake = ["unnamed.png", "Scenic.jpg"]
-numberOfPaths = 2
+pathsToTake = ["image1.jpg", "Scenic.jpg", "image2.jpg", "image3.jpg", "image4.jpg", "image5.jpg", "image6.jpg", "image7.jpg"]
+numberOfPaths = 8
 
 path = pathsToTake[random.randint(0, numberOfPaths - 1)]
 pathTwo = pathsToTake[random.randint(0, numberOfPaths - 1)]
