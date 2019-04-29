@@ -74,27 +74,15 @@ except:
 spotifyObject=spotipy.Spotify(auth=token)
 
 #get current device:
-devices=spotifyObject.devices()
-print(json.dumps(devices,sort_keys=True,indent=4))
-print()
-deviceID=devices['devices'][0]['id']
 
-track=spotifyObject.current_user_playing_track()
-print(json.dumps(track,sort_keys=True,indent=4))
-print()
-playback=spotifyObject.current_playback()
-print(json.dumps(playback,sort_keys=True,indent=4))
-artist=track['item']['artists'][0]['name']
-url=track['item']['album']['images'][0]['url']
-trackNumber=track['item']['track_number']
-album=track['item']['album']['name']
-duration_ms=track['progress_ms']
-searchResults=spotifyObject.search(artist,1,0,"artist")
-name=searchResults['artists']['items'][0]
-followers=name['followers']['total']
-
-
-
+try:
+    devices=spotifyObject.devices()
+    print(json.dumps(devices,sort_keys=True,indent=4))
+    print()
+    deviceID=devices['devices'][0]['id']
+except:
+    messagebox.showinfo('Attention', "Error. You must have Spotify open to run this program. Please close the program, open spotify, and try again.")
+    sys.exit()
 
 def formatMS(number):
     seconds=number/1000
@@ -102,14 +90,6 @@ def formatMS(number):
     seconds=int(seconds%60)
     formatMS=str(minutes)+" : "+str(seconds)
     return formatMS
-
-duration_ms=formatMS(duration_ms)
-print("Duration: " + str(duration_ms))
-track=track['item']['name']
-
-
-if artist!='':
-    print("Currently playing: " +artist+"-"+track)
 
 def nextTrack():
     try:
@@ -149,32 +129,22 @@ def muteUnmuteTrack():
     except:
         premiumMessage()
 
-"""def playPauseUpdate():
-    track=spotifyObject.current_user_playing_track()
-    isPlaying=track['is_playing']
-    if (isPlaying):
-        btnPause['image']=pauseSong
-        btnPause.image=pauseSong
-    else:
-        btnPause['image']=playSong
-        btnPause.image=playSong
-    threading.Timer(0.05, playPauseUpdate).start()"""
-
-
         
 def update():
     global endProgram
     if (endProgram):
         return
-    track=spotifyObject.current_user_playing_track()
-    isPlaying=track['is_playing']
-    if (isPlaying):
-        btnPause['image']=pauseSong
-        btnPause.image=pauseSong
-    else:
-        btnPause['image']=playSong
-        btnPause.image=playSong
-    
+    try:
+        track=spotifyObject.current_user_playing_track()
+        isPlaying=track['is_playing']
+        if (isPlaying):
+            btnPause['image']=pauseSong
+            btnPause.image=pauseSong
+        else:
+            btnPause['image']=playSong
+            btnPause.image=playSong
+    except:
+        this = 1
     try:
         duration_ms=track['progress_ms']
         duration_ms=formatMS(duration_ms)
@@ -203,11 +173,12 @@ def update():
         album=track['item']['album']['name']
         label_album['text']="Album: {}".format(album)
         label_trackNumber['text']="Track number: {}".format(trackNumber)
+        isPlaying=track['is_playing']
     except:
         label_album['text']="Album: unknown"
         label_trackNumber['text']="Track number: unknown"
 
-    isPlaying=track['is_playing']
+    
    
     try:
         track=track['item']['name']
@@ -381,8 +352,7 @@ def songs():
         xscrollbar.pack(side = BOTTOM, fill = X,anchor='w')
         yscrollbar.config(command = text.yview)
         xscrollbar.config(command = text.xview)
-        """txt = ScrolledText(mainFrameVote, width=48,height=13)
-        txt['font'] = ('consolas', '9')"""
+
         searchFrame=Frame(mainFrameVote,bg="limegreen")
         e = Entry(searchFrame, width=15)
         lblArtist=Label(searchFrame,text="Please enter an artist:",bg="limegreen")
@@ -433,12 +403,6 @@ def profiles():
         lblProfileImage=Label(mainFrameProfile,image=imageProfile,bg="#262626", fg="white", anchor=E,font=("Helvetica",12,"bold", "italic"))
         lblProfileImage.image=imageProfile
         
-    """playlists = spotifyObject.user_playlists(user['id'])
-    for playlist in playlists['items']:
-            if (playlist['owner']['id'] == user['id']):
-                print()
-                print(playlist['name'])"""
-
     if (profileCount==0):
         lblProfileImage.pack()
         lblName=Label(mainFrameProfile,text="Username: "+displayName,bg="black", fg="white",font=("Helvetica",12,"bold", "italic"))
@@ -922,15 +886,7 @@ lblProfile=Label(aboveFrame,text="Spotify Sync",fg="black",bg="limegreen",font=(
 btnProfile.pack(side=RIGHT,ipadx=5)
 lblProfile.pack()
 
-"""menubar = Menu(btnProfile)
-setting = Menu(menubar, tearoff=0)
-setting.add_command(label="something")
-setting.add_command(label="something")
-setting.add_separator()
-setting.add_command(label="Log out", command=root.quit)
-menubar.add_cascade(label="Settings", menu=setting)
-# display the menu
-root.config(menu=menubar)"""
+
 
 #label.grid(ipadx=105,ipady=2,sticky=N+W)
 #btnSettings.grid(row=0,column=2,sticky=E)
@@ -980,23 +936,20 @@ btnGroup.grid()
 
 #label_1=Label(bottomLeftFrame,image=music,bg="white",anchor=W, fg="white")
 labelCurrentlyPlaying=Label(bottomLeftFrame,text="Currently playing: ",bg="black",fg="lightgray",font=("Helvetica",12,"bold"),anchor=W)
-label_1_song=Label(bottomLeftFrame,text="Song: "+ track+"",bg="black",fg="aqua",anchor=W,width=30, font=("Helvetica", 10, "bold"))
-label_1_artist=Label(bottomLeftFrame,text="Artist: "+artist+"",bg="black",fg="lightgray",width=30,anchor=W)
-label_album=Label(bottomLeftFrame,text="Album: "+ album+"",bg="black",fg="lightgray",anchor=W,width=30)
-label_trackNumber=Label(bottomLeftFrame,text="Track number: "+ str(trackNumber)+"",bg="black",fg="lightgray",anchor=W,width=30)
-lblDuration=Label(bottomLeftFrame,text="Duration: "+ str(duration_ms)+"",bg="black",fg="lightgray",anchor=W,width=30)
-label_followers=Label(bottomLeftFrame,text="Followers: "+ str(followers)+"",bg="black",fg="lightgray",anchor=W,width=30)
+label_1_song=Label(bottomLeftFrame,text="Song: ",bg="black",fg="aqua",anchor=W,width=30, font=("Helvetica", 10, "bold"))
+label_1_artist=Label(bottomLeftFrame,text="Artist: ",bg="black",fg="lightgray",width=30,anchor=W)
+label_album=Label(bottomLeftFrame,text="Album: ",bg="black",fg="lightgray",anchor=W,width=30)
+label_trackNumber=Label(bottomLeftFrame,text="Track number: ",bg="black",fg="lightgray",anchor=W,width=30)
+lblDuration=Label(bottomLeftFrame,text="Duration: ",bg="black",fg="lightgray",anchor=W,width=30)
+label_followers=Label(bottomLeftFrame,text="Followers: ",bg="black",fg="lightgray",anchor=W,width=30)
 
 #label_1_duration=Label(bottomLeftFrame,text="Duration: mm:ss",bg="white",fg="black",width=35)
 
 label_mute=Label(bottomLeftFrame,image=mute,bg="white")
 
 #Converting url to image
-raw_data = urllib.request.urlopen(url).read()
-im = Image.open(io.BytesIO(raw_data))
-im = im.resize((100, 100), Image.ANTIALIAS)
-imageAlbum =ImageTk.PhotoImage(im)
-labelImage=Label(bottomRightFrame,image=imageAlbum,bg="#262626", anchor=E,font=("Helvetica",12,"bold", "italic"))
+
+labelImage=Label(bottomRightFrame,bg="#262626", anchor=E,font=("Helvetica",12,"bold", "italic"))
 
 label_2_song=Label(bottomRightFrame,text="Song: X",bg="black",fg="white",width=30)
 label_2_artist=Label(bottomRightFrame,text="Artist: X",bg="black",fg="white",width=5)
@@ -1039,58 +992,14 @@ labelImage.grid(row=0,column=8,rowspan=3,ipady=5,padx=45)
 #update()
 
 
-##Accessing the database
-track=spotifyObject.current_user_playing_track()
-uri=track['item']['uri']
-durationMS=str(track['progress_ms'])
-isPlaying=track['is_playing']
-
-
-
 try:
         connection = mysql.connector.connect(host='classdb.it.mtu.edu',
                                              port='3307',
                                              database='byteme',
                                              user='byteme_rw',
                                              password='password')
-        """if connection.is_connected():
-            db_Info = connection.get_server_info()
-            print("Connected to MySQL database... MySQL Server version on ", db_Info)
-
-            cursor = connection.cursor()
-            cursor.execute("select database();")
-            record = cursor.fetchone()
-            print ("you're connected to - ", record)
-
-
-            sql_select_Query = "select host_name from Groups where group_name='byteme';"
-            cursor = connection.cursor()
-            cursor.execute(sql_select_Query)
-            records = cursor.fetchall()
-            for row in records:
-                name=row[0]
-                
-                
-        if (name=="mr.vollset"):
-            sqlQuery1="update GroupPlaying set track_uri="+"'"+uri+"'"+" where group_name='byteme';"
-            sqlQuery2="update GroupPlaying set position="+durationMS+" where group_name='byteme';"
-
-            cursor.execute(sqlQuery1)
-            cursor.execute(sqlQuery2)
-            record=cursor.fetchone()
-            cursor = connection.cursor()
-            cursor.callproc('updateGroupPlaying',args=('byteme',uri,durationMS,isPlaying))
-            cursor.close()
-            connection.commit()  
-            print(record)
-            connection.commit()"""
-           
-            
 except Error as e:
         print ("error while connecting to MySQL", e)
-
-
-
 
 finally:
 
