@@ -23,7 +23,7 @@ from tkinter.scrolledtext import ScrolledText
 
 urle=input("enter ID: ")
 
-
+syncGroup=""
 
 scope="user-read-private user-read-playback-state user-modify-playback-state"
 
@@ -264,6 +264,22 @@ def joinGroup(groupName):
          print('Attention',"There's no group named "+groupName)
          return
 
+def isActive(groupName):
+    connect()
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from GroupPlaying where group_name="+"'"+groupName+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        try:
+            records[0][0]==groupName #This means the group is active
+            cursor.close()
+            return True
+        except:
+            cursor.close()
+            return False
+
+
 def connect():
     global connection
     try:
@@ -287,7 +303,134 @@ def connect():
 
 
 
+#Check if group is avtive, then listens to the group       
+def listenToGroup(groupName,usrID):
+    global lblListenGroup
+    global syncGroup
+    global isHost
+    if (isActive(syncGroup) and checkHost(groupName)): #If host alrady pulls information to user
+        connect()
+        cursor = connection.cursor()
+        cursor.callproc('deleteGroupPlaying',args=(syncGroup,))
+        cursor.close()
+        connection.commit()
+        isHost=""
+        print('Attention',"You you just left group "+syncGroup)
+        
+    
+    if (isActive(groupName) or checkHost(groupName,usrID)): #Either the group is active, or the user is host and can make the group active
+        isHost=checkHost(groupName,usrID)
+        syncGroup=groupName
+        if (isHost): ##Need to have this code here even though it's in the pull function, because of the finActiveGroups needs to be updated only once. 
+            try:
+                track=spotifyObject.current_user_playing_track()
+                uri=track['item']['uri']
+                durationMS=str(track['progress_ms'])
+                isPlaying=track['is_playing']
+                cursor = connection.cursor()
+                cursor.callproc('addGroupPlaying',args=(groupName,uri,durationMS,isPlaying))
+                cursor.close()
+                connection.commit()
+                connection.close()
+                findActiveGroups(usrID)
+            except Error as e:
+                    print('attention',"error while connecting to MySQL")
+        syncToGroup() ##This function needs to check the isHost variable and push/pull accordingly
+    else:
+        print('Attention',"You can't listen to the group "+groupName+",because it's inactive")
 
+
+def syncToGroup():
+    if isHost==(''):
+        return
+    if isHost==(True):
+        push()
+    else:
+        pull()
+def push():
+    global isHost
+    global syncGroup
+    if(isHost!=True):
+        return
+    try:
+        if connection.is_connected():
+            print("pushing")
+            track=spotifyObject.current_user_playing_track()
+            uri=track['item']['uri']
+            durationMS=str(track['progress_ms'])
+            isPlaying=track['is_playing']
+            cursor = connection.cursor()
+            cursor.callproc('updateGroupPlaying',args=(syncGroup,uri,durationMS,isPlaying))
+            cursor.close()
+            connection.commit()
+    except Error as e:
+        print("her er feilen")
+        print('attention',"error while connecting to MySQL")
+
+def pull():
+    global isHost
+    global syncGroup
+    if (isHost!=False):
+        thredning.cancel()
+        return
+    connect()
+    try:
+        if connection.is_connected():
+            print("pulling")
+            db_Info = connection.get_server_info()
+            cursor = connection.cursor()
+            cursor.execute("select database();")
+            record = cursor.fetchone()
+            sqlQuery1 = "select track_uri from GroupPlaying where group_name='"+syncGroup+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery1)
+            records = cursor.fetchall()
+            track_uri=""
+            try:
+                records[0][0]
+                for row in records:
+                    track_uri=str(row[0])
+            except:
+                print('attention',"Can't listen to this group anymore, because host has left!")
+                return 
+            sqlQuery2 = "select position from GroupPlaying where group_name='"+syncGroup+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery2)
+            records = cursor.fetchall()
+            for row in records:
+                position=row[0]
+            sqlQuery2 = "select isPaused from GroupPlaying where group_name='"+syncGroup+"';"
+            cursor = connection.cursor()
+            cursor.execute(sqlQuery2)
+            records = cursor.fetchall()
+            for row in records:
+                isPaused=row[0]
+            track=spotifyObject.current_user_playing_track()
+            uri=track['item']['uri']
+            durationMS=str(track['progress_ms'])
+            isPlaying=track['is_playing']
+            if (isPaused==0 and isPlaying==True): #If the song is playing, then pause the song
+                spotifyObject.pause_playback(deviceID)
+                print("1")
+            elif (isPaused==1 and isPlaying==False):
+                trackList=[]
+                trackList.append(track_uri)
+                spotifyObject.start_playback(deviceID,None,trackList)
+                spotifyObject.seek_track(int(position), deviceID)
+                print("2")
+
+            elif (isPaused==1 and not (track_uri==uri and -10000<int(position)-int(durationMS)<10000)):
+                  trackList=[]
+                  trackList.append(track_uri)
+                  spotifyObject.start_playback(deviceID,None,trackList)
+                  spotifyObject.seek_track(int(position), deviceID)
+                  print("3")
+            
+            disconnect()
+            threading.Timer(5.00, pull).start()
+            
+    except Error as e:
+        print('Attention',"error while connecting to MySQL")
 
     
 def disconnect():
