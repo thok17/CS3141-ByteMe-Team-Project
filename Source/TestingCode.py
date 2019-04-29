@@ -88,6 +88,38 @@ def previousTrack():
 
     return previousTrack
 
+#Finds all groups where user i host. 
+def findMyGroups(usrID,txt):
+    if (connection.is_connected()):
+        sqlQuery = "select group_name from Groups where host_name="+"'"+usrID+"'";
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        text=""
+        try:
+            for row in records:
+                text+=(row[0]+"\n")
+        except:
+            print('Attention', "There's no active groups")
+        finally:
+            print("end")
+
+#Creating a new group. User is automatically the host
+def createGroup(groupName):
+    global connection
+    connect()
+    checkUser(usrID)
+    #Check to see that there's not already a group with the same name
+    if (not checkGroup(groupName)): 
+            cursor = connection.cursor()
+            cursor.callproc('addGroup',args=(groupName,usrID,1))
+            cursor.callproc('addPart',args=(usrID,groupName,1))
+            cursor.close()
+            connection.commit()
+            findMyGroups(usrID,groupName)
+    else:
+         print("Attention", "GroupName already exist, so group can't be created with this name.")
+
 #Finds all active Groups that user is a part of
 def findActiveGroups(usrID):
     connect()
@@ -195,6 +227,42 @@ def checkHost(groupName, usrID):
             print("The user is not Host")
         return False
         
+#Check if user is already a part of the group:
+def checkJoin(groupName):
+    print("\n\n\n\n\n\n\n\n\n\nRunning checkJoin() ***********************\n\n\n\n\n\n\n\n\n")
+    global connection
+    connect()
+    if (connection.is_connected()):
+        print("\n\n\n\n\n\n\n\n Is Connected\n\n\n\n\n\n\n\n")
+        sqlQuery = "select username from isPartOf where group_name='"+groupName+"' and username='"+usrID+"';"
+        cursor = connection.cursor()
+        cursor.execute(sqlQuery)
+        records = cursor.fetchall()
+        print(records[0][0])
+        if records[0][0] == usrID:
+            return True #user is in group
+        else:
+            return False #user is not in group
+
+#Takes in txt and labels to update labels and text in the Group room.
+def joinGroup(groupName):
+    global connection
+    connect()
+    checkUser(usrID)
+    #Check to see that there exist a group with with name 'groupName'
+    if(checkGroup(groupName)):
+        if(not checkJoin(groupName)):
+            cursor = connection.cursor()
+            cursor.callproc('updateGroupNumber',args=(groupName,))
+            cursor.callproc('addIsPartOf',args=(usrID,groupName,0))
+            connection.commit()
+            cursor.close()
+            print('Attention','You have now joined the group '+groupName)
+            
+        listenToGroup(groupName,usrID)
+    else:
+         print('Attention',"There's no group named "+groupName)
+         return
 
 def connect():
     global connection
@@ -309,7 +377,36 @@ class TestSpotifyGUI(unittest.TestCase):
    @unittest.expectedFailure 
    def test_failCheckHost(self):
        result=checkHost("Fake Group", "Test User")
-       self.assertEqual(result, True)       
+       self.assertEqual(result, True) 
+
+   def test_createGroup(self):
+       createGroup("tester12345")
+       query = "select group_name from Groups where group_name='tester12345';"
+       cursor = connection.cursor()
+       cursor.execute(query)
+       records = cursor.fetchall()
+       result = ""
+       try:
+           for row in records:
+               result = row[0]
+       except:
+           self.fail()
+
+   def test_joinGroup(self):
+       joinGroup("tester12345")
+
+        def test_listenToGroup(self):
+            listenToGroup("tester12345", usrID)
+
+        def test_isActive(self):
+            connect()
+            result = isActive("tester12345")
+            self.assertTrue(result)
+
+        def test_checkJoin(self):
+            connect()
+            result = checkJoin("tester12345")
+            self.assertEqual(result, True)      
 
    def test_database(self):
        try:
