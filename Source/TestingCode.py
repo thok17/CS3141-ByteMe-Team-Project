@@ -43,6 +43,7 @@ spotifyObject=spotipy.Spotify(auth=token)
 devices=spotifyObject.devices()
 print(json.dumps(devices,sort_keys=True,indent=4))
 print()
+usrID="cabbage777"
 
 deviceID=devices['devices'][0]['id']
 
@@ -238,7 +239,6 @@ def checkJoin(groupName):
         cursor = connection.cursor()
         cursor.execute(sqlQuery)
         records = cursor.fetchall()
-        print(records[0][0])
         if records[0][0] == usrID:
             return True #user is in group
         else:
@@ -395,15 +395,15 @@ class TestSpotifyGUI(unittest.TestCase):
    def test_joinGroup(self):
        joinGroup("tester12345")
 
-        def test_listenToGroup(self):
+       def test_listenToGroup(self):
             listenToGroup("tester12345", usrID)
 
-        def test_isActive(self):
+       def test_isActive(self):
             connect()
             result = isActive("tester12345")
             self.assertTrue(result)
 
-        def test_checkJoin(self):
+       def test_checkJoin(self):
             connect()
             result = checkJoin("tester12345")
             self.assertEqual(result, True)      
@@ -466,7 +466,6 @@ class TestSpotifyGUI(unittest.TestCase):
        
 if (__name__=='__main__'):
     unittest.main()
-
 
 
     
